@@ -1,0 +1,35 @@
+//
+// DECID.RC2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+	#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+/////////////////////////////////////////////////////////////////////////////
+IDD_CNN_DIALOG DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CNN Architecture"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "In Channels:",IDC_STATIC,10,10,60,10
+    EDITTEXT        IDC_EDIT_IN_CHANNELS,80,10,50,14,ES_AUTOHSCROLL
+    LTEXT           "Out Channels:",IDC_STATIC,10,30,60,10
+    EDITTEXT        IDC_EDIT_OUT_CHANNELS,80,30,50,14,ES_AUTOHSCROLL
+    LTEXT           "Kernel Size:",IDC_STATIC,10,50,60,10
+    EDITTEXT        IDC_EDIT_KERNEL_SIZE,80,50,50,14,ES_AUTOHSCROLL
+    LTEXT           "Stride:",IDC_STATIC,10,70,60,10
+    EDITTEXT        IDC_EDIT_STRIDE,80,70,50,14,ES_AUTOHSCROLL
+    LTEXT           "Padding:",IDC_STATIC,10,90,60,10
+    EDITTEXT        IDC_EDIT_PADDING,80,90,50,14,ES_AUTOHSCROLL
+    LTEXT           "Use Pool:",IDC_STATIC,10,110,60,10
+    CHECKBOX        "",IDC_CHECK_USE_POOL,80,110,50,10
+    LTEXT           "Pool Size:",IDC_STATIC,10,130,60,10
+    EDITTEXT        IDC_EDIT_POOL_SIZE,80,130,50,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Add Layer",IDC_BUTTON_ADD_LAYER,10,150,60,14
+    LISTBOX         IDC_LIST_STRUCTURE,150,10,150,200,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END

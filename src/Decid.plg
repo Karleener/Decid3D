@@ -1,0 +1,213 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Decid - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "g:\Temp\RSP360.tmp" with contents
+[
+/nologo /MD /W3 /GX /Ox /Ot /Oa /Ow /Og /Oi /Op /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Release/" /Fp"Release/Decid.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMc.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\ConfigNeurone.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\Courbe.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\DaliogProgression.cpp"
+"G:\prog\DecideSVMcvSansRPL_version_cedric\Decid.cpp"
+]
+Creating command line "cl.exe @g:\Temp\RSP360.tmp" 
+Creating temporary file "g:\Temp\RSP361.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:no /pdb:"Release/Decid.pdb" /machine:I386 /out:"Release/Decid.exe" 
+.\Release\Boosting.obj
+.\Release\BoostMc.obj
+.\Release\BoostMcBis.obj
+.\Release\ChildFrm.obj
+.\Release\ConfigNeurone.obj
+.\Release\Courbe.obj
+.\Release\DaliogProgression.obj
+.\Release\Decid.obj
+.\Release\DemChaine.obj
+.\Release\DialApprend.obj
+.\Release\DialBoosting.obj
+.\Release\DialChoixClass.obj
+.\Release\DialConfigPoly.obj
+.\Release\DialGauss1.obj
+.\Release\Dialiter.obj
+.\Release\Dialog2Val.obj
+.\Release\DialPmc.obj
+.\Release\DialResultImplan.obj
+.\Release\DialVam.obj
+.\Release\DonneeFloat.obj
+.\Release\GenGauss.obj
+.\Release\kppv.obj
+.\Release\MainFrm.obj
+.\Release\PolMcFloat.obj
+.\Release\Reseau.obj
+.\Release\StdAfx.obj
+.\Release\svm.obj
+.\Release\SVMParametres1.obj
+.\Release\TreeConfig.obj
+.\Release\Decid.res
+]
+Creating command line "link.exe @g:\Temp\RSP361.tmp"
+<h3>Output Window</h3>
+Compiling...
+Boosting.cpp
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(63) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(88) : warning C4101: 'mes' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(88) : warning C4101: 'c' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(88) : warning C4101: 'i' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(265) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(272) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(320) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(328) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(329) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(287) : warning C4101: 'ClassInit' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(287) : warning C4101: 'par' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(287) : warning C4101: 'v' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(588) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(611) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(751) : warning C4244: '=' : conversion from 'const double' to 'int', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(751) : warning C4244: '=' : conversion from 'const double' to 'int', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(763) : warning C4101: 'v' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(796) : warning C4101: 'c' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(943) : warning C4101: 'c' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1159) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1160) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1165) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1166) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1177) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1178) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1183) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1184) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1207) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1227) : warning C4101: 'ClassInit' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1225) : warning C4101: 'pol' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1371) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1305) : warning C4101: 'mes' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1304) : warning C4101: 'p' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1305) : warning C4101: 'ClassInit' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1305) : warning C4101: 'c' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1305) : warning C4101: 'v' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1304) : warning C4101: 'pol' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1305) : warning C4101: 'ext' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1414) : warning C4101: 'mes' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1414) : warning C4101: 'c' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\Boosting.cpp(1414) : warning C4101: 'i' : unreferenced local variable
+BoostMc.cpp
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMc.cpp(69) : warning C4101: 'col' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMc.cpp(67) : warning C4101: 'i' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMc.cpp(69) : warning C4101: 'clas' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMc.cpp(69) : warning C4101: 'l' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMc.cpp(179) : warning C4101: 'v' : unreferenced local variable
+BoostMcBis.cpp
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(65) : warning C4101: 'col' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(63) : warning C4101: 'mes2t' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(63) : warning C4101: 'mes2' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(63) : warning C4101: 'i' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(65) : warning C4101: 'clas' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(63) : warning C4101: 'pft' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(65) : warning C4101: 'l' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(63) : warning C4101: 'pf' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(142) : warning C4101: 'temp' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(139) : warning C4101: 'cf' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(139) : warning C4101: 'ClasseFinale' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\BoostMcBis.cpp(311) : warning C4101: 'v' : unreferenced local variable
+ChildFrm.cpp
+G:\prog\DecideSVMcvSansRPL_version_cedric\gengauss.h(12) : warning C4305: 'initializing' : truncation from 'const double' to 'const float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(456) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1567) : warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1536) : warning C4101: 'par' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1547) : warning C4101: 'v' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1536) : warning C4101: 'nmax' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1536) : warning C4101: 'i' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1535) : warning C4101: 'aa' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1536) : warning C4101: 'cl' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1676) : warning C4101: 'mesTest' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1874) : warning C4101: 'Vert' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1874) : warning C4101: 'Bleu' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1869) : warning C4101: 'cx' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1869) : warning C4101: 'cy' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1874) : warning C4101: 'Rouge' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1871) : warning C4101: 'cl' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2001) : warning C4244: 'argument' : conversion from 'long' to 'short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1967) : warning C4101: 'Vert' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1967) : warning C4101: 'Bleu' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1962) : warning C4101: 'cx' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1962) : warning C4101: 'cy' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1967) : warning C4101: 'Rouge' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(1963) : warning C4101: 'cl' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2211) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2220) : warning C4244: 'argument' : conversion from 'long' to 'short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2291) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2293) : warning C4305: '=' : truncation from 'const double' to 'float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2294) : warning C4305: '=' : truncation from 'const double' to 'float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2450) : warning C4244: 'argument' : conversion from 'long' to 'unsigned short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2550) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2655) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2664) : warning C4244: 'argument' : conversion from 'long' to 'short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2735) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2737) : warning C4305: '=' : truncation from 'const double' to 'float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2738) : warning C4305: '=' : truncation from 'const double' to 'float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2912) : warning C4244: 'argument' : conversion from 'long' to 'unsigned short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3026) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3035) : warning C4244: 'argument' : conversion from 'long' to 'short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3100) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3102) : warning C4305: '=' : truncation from 'const double' to 'float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3103) : warning C4305: '=' : truncation from 'const double' to 'float'
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3273) : warning C4244: 'argument' : conversion from 'long' to 'unsigned short', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(2947) : warning C4101: 'v' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3344) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3536) : warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3537) : warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3578) : warning C4244: '*=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3579) : warning C4244: '*=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3391) : warning C4101: 'p' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3771) : warning C4101: 'fv' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3390) : warning C4101: 'Vert' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3772) : warning C4101: 'v' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3391) : warning C4101: 'cx' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3390) : warning C4101: 'Bleu' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3391) : warning C4101: 'cy' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3390) : warning C4101: 'Rouge' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3914) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3919) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3850) : warning C4101: 'centre' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(3849) : warning C4101: 'k' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4067) : warning C4244: '=' : conversion from 'float' to 'int', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4117) : warning C4101: 'mes' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4178) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4179) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4190) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4191) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4225) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4226) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4228) : warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4229) : warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(4796) : warning C4101: 'c' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(5204) : warning C4101: 'i' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(5489) : warning C4101: 'ialeat' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(5957) : warning C4101: 'ValChercher' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(6325) : warning C4244: 'initializing' : conversion from 'const float' to 'int', possible loss of data
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(6133) : warning C4101: 'erreurT' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(6341) : warning C4101: 'ValChercher' : unreferenced local variable
+G:\prog\DecideSVMcvSansRPL_version_cedric\ChildFrm.cpp(6905) : warning C4101: 'erreurG' : unreferenced local variable
+ConfigNeurone.cpp
+G:\prog\DecideSVMcvSansRPL_version_cedric\ConfigNeurone.cpp(87) : warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+Courbe.cpp
+DaliogProgression.cpp
+Decid.cpp
+Generating Code...
+Linking...
+
+
+
+<h3>Results</h3>
+Decid.exe - 0 error(s), 137 warning(s)
+</pre>
+</body>
+</html>

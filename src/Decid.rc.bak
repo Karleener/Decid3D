@@ -1,0 +1,967 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Français (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 12, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\Decid.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.fra\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\Decid.ico"
+
+IDI_ICON1               ICON                    "res\\icon1.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+
+IDB_BITMAPTREE          BITMAP                  "res\\bitmaptr.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&Projet"
+    BEGIN
+        MENUITEM "&Nouveau\tCtrl+N",            ID_FILE_NEW
+        MENUITEM SEPARATOR
+        MENUITEM "&Quitter",                    ID_APP_EXIT
+    END
+    POPUP "&Affichage"
+    BEGIN
+        MENUITEM "&Barre d'outils",             ID_VIEW_TOOLBAR
+        MENUITEM "Barre d'é&tat",               ID_VIEW_STATUS_BAR
+    END
+    POPUP "&?"
+    BEGIN
+        MENUITEM "&A propos de Decid...",       ID_APP_ABOUT
+    END
+END
+
+IDR_DECIDTYPE MENU
+BEGIN
+    POPUP "&Projet"
+    BEGIN
+        MENUITEM "&Nouveau\tCtrl+N (new)",      ID_FILE_NEW
+        MENUITEM "&Fermer",                     ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Quitter",                    ID_APP_EXIT
+    END
+    POPUP "Configuration"
+    BEGIN
+        MENUITEM "Lire données au format CSV",  ID_CONFIGURATION_LIREAUFORMATCSV
+        MENUITEM "Sauver au format CSV",        ID_CONFIGURATION_SAUVERAUFORMATCSV
+        MENUITEM "Info sur les mesures (samples info)", ID_CONFIGURATION_INFOSURLESMESURES
+        MENUITEM "Choix des attributs (depicted features)", ID_CONFIGURATION_CHOIXDESPARAMTRES
+        MENUITEM "Fichier multiclasse (classe config.)", ID_CONFIGURATION_FICHIERMULTICLASSE
+        MENUITEM "Fichier Min Max de normalisation", ID_CONFIGURATION_FICHIERMINMAXDENORMALISATION
+        MENUITEM "Normalise (dynamique)",       ID_CONFIGURATION_NORMALISE
+        MENUITEM "Visu test/training samples",  ID_CONFIGURATION_VISUALISATIONDES32845
+        MENUITEM "Régression : lire CSV",       ID_CONFIGURATION_R32871
+        MENUITEM "Paramètres du logiciel",      ID_CONFIGURATION_PARAMETRES_LOG
+    END
+    POPUP "SVM"
+    BEGIN
+        MENUITEM "Apprentissage (manuel/auto)", ID_SVM_SVMOPENCVTRAINAUTO
+        MENUITEM "Evaluation",                  ID_SVM_SVMOPENCVEVALUATION
+        MENUITEM "Charger/visualiser un modèle", ID_SVM_SVMOPENCVVISUFRONTIERE
+        MENUITEM "Decision sur fichier de données", ID_SVM_SVMOPENCVDECISIONSURFICHIERDEDONN32861
+        MENUITEM "Apprentissage/visu dynamique", ID_SVM_SVMOPENCVTRAINDYNAMIQUE
+        MENUITEM "SVM  Visu 3D",                ID_SVM_SVMOPENCVVISU3D
+        MENUITEM SEPARATOR
+        MENUITEM "SVM en regression",           ID_SVM_SVMOPENCVREGRESSION
+        MENUITEM "Validation croisee (2 à 10 parties)", ID_SVM_VALIDATIONCROISEE32906
+    END
+    POPUP "Perceptron"
+    BEGIN
+        MENUITEM "Apprentissage",               ID_PERCEPTRON_MLPOPENCVAPPRENTISSAGE
+        MENUITEM "Evaluation",                  ID_PERCEPTRON_MLPOPENCVEVALUATION
+        MENUITEM "Charger/visualiser un modèle", ID_PERCEPTRON_MLPOPENCVVISUFRONTI32857
+        MENUITEM "Decision sur fichier de donnees", ID_PERCEPTRON_MLPOPENCVDECISIONSURFICHIERDEDONNEES
+        MENUITEM "Apprentissage/visu dynamique", ID_PERCEPTRON_APPRENTISSAGEDYNAMIQUE
+        MENUITEM "MLP visualisation 3D",        ID_PERCEPTRON_VISU3D
+        MENUITEM "MLP en regression",           ID_PERCEPTRON_MLPENREGRESSION
+    END
+    POPUP "Kppv"
+    BEGIN
+        MENUITEM "Apprentissage",               ID_KPPV_KPPVOPENCVAPPRENTISSAGE
+        MENUITEM "Evaluation",                  ID_KPPV_KPPVOPENCVEVALUATION
+        MENUITEM "Charger/visualiser un modèle", ID_KPPV_KPPVOPENCVVISUFRONTIERE
+        MENUITEM "Decision sur fichier de donnees", ID_KPPV_KPPVOPENCVDECISIONSURFICHIERDEDONNEES
+        MENUITEM "Apprentissage/visu dynamique (lent en 3D)", ID_KPPV_KPPVOPENCVAPPRENTISSAGEDYNAMIQUE
+        MENUITEM "Visu 3D",                     ID_KPPV_KPPVVISU3D
+    END
+    POPUP "Random Forest"
+    BEGIN
+        MENUITEM "Apprentissage",               ID_RANDOMFOREST_RANDOMFORESTOPENCVAPPRENTISSAGE
+        MENUITEM "Evaluation",                  ID_RANDOMFOREST_RANDOMFORESTEVALUATION
+        MENUITEM "Charger/visualiser un modèle", ID_RANDOMFOREST_RANDOMFORESTOPENCVVISUFRONTIERE
+        MENUITEM "Decision fichier de donnee",  ID_RANDOMFOREST_RANDOMFORESTOPENCVDECISIONFICHIERDEDONNEE
+        MENUITEM "Visu 3D",                     ID_RANDOMFOREST_RANDOMFORESTVISU3D
+        MENUITEM "RandomForest regression",     ID_RANDOMFOREST_RANDOMFORESTREGRESSION
+    END
+    POPUP "Naive Bayes"
+    BEGIN
+        MENUITEM "Apprentissage",               ID_NAIVEBAYES_APPRENTISSAGE
+        MENUITEM "Evaluation",                  ID_NAIVEBAYES_EVALUATION
+        MENUITEM "Charger/visualiser un modèle", ID_NAIVEBAYES_VISUFRONTIERE
+        MENUITEM "Decision sur fichier de donnees", ID_NAIVEBAYES_DECISIONSURFICHIERDEDONNEES
+        MENUITEM "Visu 3D",                     ID_NAIVEBAYES_VISU3D
+    END
+    POPUP "Boosting opencv"
+    BEGIN
+        MENUITEM "Apprentissage",               ID_DTREES_APPRENTISSAGE
+        MENUITEM "Evaluation",                  ID_DTREES_EVALUATION
+        MENUITEM "Charger/visualiser un modèle", ID_DTREES_VISUFRONTIERE
+        MENUITEM "Decision sur fichier de donnees", ID_BOOSTINGOPENCV_DECISIONSURFICHIERDEDONNEES
+        MENUITEM "Visu 3D",                     ID_BOOSTINGOPENCV_VISU3D
+        MENUITEM "Reset (F6)",                  ID_BOOSTINGOPENCV_RESET
+        MENUITEM "Une iteration (F5)",          ID_BOOSTINGOPENCV_UNEITERATION
+    END
+    POPUP "Em"
+    BEGIN
+        MENUITEM "Apprentissage non supervisé", ID_EM_APPRENTISSAGE
+        MENUITEM "Visu frontiere",              ID_EM_VISUFRONTIERE
+        MENUITEM "Evaluation",                  ID_EM_EVALUATION
+        MENUITEM "Enregistrer les donnees classees dans un CSV", ID_EM_ENREGISTRERLESDONNEESCLASSEESDANSUNCSV
+    END
+    POPUP "&Edition"
+    BEGIN
+        MENUITEM "&Annuler\tCtrl+Z",            ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Couper\tCtrl+X",             ID_EDIT_CUT
+        MENUITEM "&Copier\tCtrl+C",             ID_EDIT_COPY
+        MENUITEM "C&oller\tCtrl+V",             ID_EDIT_PASTE
+        MENUITEM "Gaussiennes 2D",              ID_EDITION_GAUSSIENNES2D
+        MENUITEM "Gaussiennes 3D",              ID_EDITION_GAUSSIENNES3D
+        MENUITEM "Spirales 3D",                 ID_EDITION_SPIRALES3D
+    END
+    POPUP "&Affichage"
+    BEGIN
+        MENUITEM "&Barre d'outils",             ID_VIEW_TOOLBAR
+        MENUITEM "Barre d'é&tat",               ID_VIEW_STATUS_BAR
+    END
+    POPUP "Fe&nêtre"
+    BEGIN
+        MENUITEM "&Réorganiser les icônes",     ID_WINDOW_ARRANGE
+        MENUITEM "Rafraichir",                  ID_FENTRE_RAFRAICHIR
+        MENUITEM "Maximize",                    ID_FENTRE_MAXIMIZE
+    END
+    POPUP "&?"
+    BEGIN
+        MENUITEM "&A propos de Decid...",       ID_APP_ABOUT
+    END
+    POPUP "Image"
+    BEGIN
+        MENUITEM "Aquisition et visu 3D",       ID_IMAGE_AQUISITIONETVISU3D
+        MENUITEM "Segmentation Lab",            ID_IMAGE_SEGMENTATIONLAB
+        MENUITEM "Apprentissage via image fixe", ID_IMAGE_APPRENTISSAGEVIAIMAGEFIXE
+        MENUITEM "Apprentissage Descripteurs de Fourier Live", ID_IMAGE_APPRENTISSAGEDESCRIPTEURSDEFOURIER
+        MENUITEM "Apprentissage Descripteurs de Fourier fixe", ID_IMAGE_APPRENTISSAGEDESCRIPTEURSDEFOURIERFIXE
+        MENUITEM "Classe une image avec Descripeur de Fourier", ID_IMAGE_CLASSEUNEIMAGEAVECDESC
+        MENUITEM "Apprend une liste dimages",   ID_IMAGE_APPRENDUNELISTEDIMAGES
+        MENUITEM "Decision sur une liste dimages", ID_IMAGE_DECISIONSURUNELISTEDIMAGES
+        MENUITEM "Train CNN",                   ID_IMAGE_TRAINCNN
+        MENUITEM "Test CNN",                    ID_IMAGE_TESTCNN
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS
+BEGIN
+    VK_F5,          ID_BOOSTINGOPENCV_UNEITERATION, VIRTKEY, NOINVERT
+    VK_F6,          ID_BOOSTINGOPENCV_RESET, VIRTKEY, NOINVERT
+    VK_F3,          ID_CONFIGURATION_LIREAUFORMATCSV, VIRTKEY, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_FENTRE_MAXIMIZE,     VIRTKEY, NOINVERT
+    VK_F1,          ID_FENTRE_RAFRAICHIR,   VIRTKEY, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_F4,          ID_SVM_SVMOPENCVTRAINDYNAMIQUE, VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 122
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "A propos de Decid"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LTEXT           "Decid version 2025 vc 2022",IDC_STATIC,39,23,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2003-2024",IDC_STATIC,39,38,119,18
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+    LTEXT           "Le2i / Imvia : Johel Mitéran - Patrick Gorria - P. Geveaux",IDC_STATIC,21,58,207,8
+    LTEXT           "Opencv 4.10.0\nVTK 9.4",IDC_STATIC,39,78,163,23
+END
+
+IDD_CONFIGPOLY DIALOGEX 0, 0, 341, 313
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configuration du fichier de mesure multi-classes"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "1/8     7/8",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,93,192,49,10
+    PUSHBUTTON      "*.cmc",IDC_NOMMMC,125,15,102,23
+    PUSHBUTTON      "Ajouter une Classe >>",IDC_AJOUTERCLAS,13,64,79,19
+    PUSHBUTTON      "Ajouter un fichier >>",IDC_AJOUTERFICH,14,88,79,19
+    PUSHBUTTON      "Enlever la sélection",IDC_SUPPRIMCLAS,14,133,79,19
+    DEFPUSHBUTTON   "Sauvegarder",IDOK,52,288,62,18
+    PUSHBUTTON      "Annuler",IDCANCEL,137,288,62,18
+    CONTROL         "1/4     3/4",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,93,207,49,10
+    CONTROL         "1/2     1/2",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,93,222,49,10
+    CONTROL         "1           0",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,94,237,46,10
+    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,196,61,138,186,WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE
+    CTEXT           "Fichier de configuration multi-classes/choose or create a file",IDC_STATIC,22,17,93,28
+    GROUPBOX        "",IDC_STATIC,7,56,90,56
+    GROUPBOX        "",IDC_STATIC,7,7,327,45
+    GROUPBOX        "Proportion  Training  Test",IDC_STATIC,7,163,170,106
+    CONTROL         "Prop. Inverse",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,92,257,58,10
+    CONTROL         "Random",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,239,43,10
+    CONTROL         "first half for training",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,222,75,10
+END
+
+IDD_CHOIXCLASS DIALOG 0, 0, 182, 87
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choix de deux classes"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT1,46,15,26,12,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY,71,15,11,13
+    EDITTEXT        IDC_EDIT2,126,15,26,12,ES_AUTOHSCROLL
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,149,15,11,12
+    EDITTEXT        IDC_EDIT3,46,39,32,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT4,126,39,32,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,25,66,32,14
+    PUSHBUTTON      "Cancel",IDCANCEL,96,66,32,14
+    LTEXT           "Classe n°",IDC_STATIC,16,16,30,10
+    LTEXT           "Classe n°",IDC_STATIC,93,16,30,10
+    LTEXT           "Prob     a priori",IDC_STATIC,16,38,28,16
+    LTEXT           "Prob     a priori",IDC_STATIC,94,38,28,16
+    GROUPBOX        "",IDC_STATIC,7,7,82,55
+    GROUPBOX        "",IDC_STATIC,88,7,82,55
+END
+
+IDD_DIALVAL DIALOG 0, 0, 129, 53
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Entrez la valeur de K"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT1,50,10,28,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,10,33,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,69,33,50,14
+END
+
+IDD_DIALOG_2VAL DIALOGEX 0, 0, 186, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Entrez deux valeurs"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_EDIT1,33,49,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,109,49,40,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,29,74,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,105,74,50,14
+    LTEXT           "Premier attribut",IDC_STATIC,25,33,64,8
+    LTEXT           "Deuxième attribut",IDC_STATIC,97,33,67,8
+END
+
+IDD_DIALOG_CONFIG_NEURONE DIALOGEX 0, 0, 441, 289
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configuration du réseau de neurone"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,72,268,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,135,268,50,14
+    EDITTEXT        IDC_EDIT1,152,7,22,18,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_C1,152,30,22,18,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_C2,152,53,22,18,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_C3,152,76,22,18,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,121,107,54,18,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ETA,121,134,54,18,ES_AUTOHSCROLL
+    CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,319,201,90,15
+    LTEXT           "Nombre de couches cachées",IDC_STATIC,7,7,136,13
+    LTEXT           "Nombre de neurones de la première couche cachée (2 minimum)",IDC_STATIC,7,34,128,18
+    LTEXT           "Seuil pour la décision",IDC_SEUIL,239,204,75,13,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Nombre d'itérations maximum",IDC_STATIC,17,110,97,13
+    LTEXT           "Nombre de neurones de la deuxième couche cachée (2 minimum)",IDC_STATIC,7,57,128,18
+    LTEXT           "Nombre de neurones de la troisième couche cachée (2 minimum)",IDC_STATIC,7,78,128,18
+    LTEXT           "Learning rate",IDC_STATIC,71,137,43,13
+    EDITTEXT        IDC_EDIT_ERREUR,121,161,54,18,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Erreur minimum",IDC_STATIC,59,167,50,13,WS_DISABLED
+    PUSHBUTTON      "Dessin",IDC_BUTTON_DESSINNN,192,268,50,14,NOT WS_VISIBLE
+    LTEXT           "Fonction d'activation",IDC_STATIC,7,186,84,13
+    CONTROL         "Linéaire",IDC_RADIO_LIN,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,89,188,41,10
+    CONTROL         "Sigmoid",IDC_RADIO_SIGMOID,"Button",BS_AUTORADIOBUTTON,89,199,41,10
+    CONTROL         "Relu",IDC_RADIO_RELU,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,89,210,31,10
+    PUSHBUTTON      "Mise à jour",IDC_BUTTON_MAJ,7,268,50,14,WS_DISABLED
+    LTEXT           "Static",IDC_AFFICHE_TEXTE,7,222,168,36
+END
+
+IDD_DIALOG_APPREND DIALOG 0, 0, 285, 177
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Apprentissage en cours"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,67,156,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,183,156,50,14
+END
+
+IDD_DIALOG1 DIALOG 0, 0, 186, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,34,74,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,97,74,50,14
+    EDITTEXT        IDC_EDIT1,69,35,40,14,ES_AUTOHSCROLL
+    LTEXT           "Entrez les premières lettres du nom du fichier",IDC_STATIC,20,14,159,8
+END
+
+IDD_DIALOG_SVM_PARA DIALOGEX 0, 0, 441, 262
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Parametres SVM apprentissage"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,141,241,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,265,241,50,14
+    CONTROL         "Linéaire",IDC_CHECK_LIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,53,52,10
+    CONTROL         "Polynôme",IDC_CHECK_POLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,80,52,10
+    CONTROL         "R.B.F.",IDC_CHECK_RBF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,115,52,10
+    CONTROL         "Perceptron",IDC_CHECK_SIGMO,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,19,136,52,10
+    EDITTEXT        IDC_POL_DEG,153,80,47,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_POL_S,235,80,47,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_POL_C,315,80,47,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SIGMO_S,153,136,52,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_SIGMO_C,235,136,52,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_RBF_GAMMA,153,115,89,12,ES_AUTOHSCROLL
+    LTEXT           "(s x*b+c)^d",IDC_STATIC,77,79,47,12
+    LTEXT           "d",IDC_STATIC,169,68,14,8
+    LTEXT           "c",IDC_STATIC,331,68,14,8
+    LTEXT           "s",IDC_STATIC,251,68,14,8
+    LTEXT           "Exp{s |a-b|^2}",IDC_STATIC,77,117,65,12
+    LTEXT           "Tangh{s a*b + c}",IDC_STATIC,77,136,57,12,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "s ( ou gamma max en auto)",IDC_STATIC,161,102,106,8
+    LTEXT           "s",IDC_STATIC,169,138,14,8
+    LTEXT           "c",IDC_STATIC,251,138,14,8
+    PUSHBUTTON      "Fichier model",IDC_MODEL,65,6,46,11,NOT WS_VISIBLE
+    PUSHBUTTON      "Apprentissage",IDC_LEARNING,10,6,51,11,NOT WS_VISIBLE
+    PUSHBUTTON      "Classifier",IDC_CLASSIFY,217,6,36,11,NOT WS_VISIBLE
+    PUSHBUTTON      "Donnée à Classer",IDC_CLASSIFY_DATA,117,6,46,11,NOT WS_VISIBLE
+    PUSHBUTTON      "Prédiction",IDC_PREDICTION,167,6,45,11,NOT WS_VISIBLE
+    EDITTEXT        IDC_LEARNING_METHODE,10,18,25,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Méthode",IDC_STATIC,44,20,31,10,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_LEARNING_COST,88,18,25,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Coût",IDC_STATIC,124,20,25,10,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_LEARNING_EPSILON,176,18,25,12,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Epsilon",IDC_STATIC,214,20,25,10,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_EDIT_W1,254,16,22,14,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "W1",IDC_STATIC,280,22,12,8,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "W2",IDC_STATIC,360,22,12,8,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_EDIT_W2,318,16,23,14,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "Train auto (les paramètres sont recherchés automatiquement pour le noyau choisi)",IDC_CHECK_AUTO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,162,278,10
+    LTEXT           "Choix du noyau K",IDC_STATIC,20,37,56,8
+    CONTROL         "",IDC_SLIDER_GAMMA,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_DISABLED | WS_TABSTOP,23,177,258,15
+    LTEXT           "Gamma dynamique",IDC_TEXTE_GAMMA,67,194,91,13,WS_DISABLED
+    LTEXT           "Static",IDC_TEXTE_ERREUR,217,195,194,32
+END
+
+IDD_DIALOG_RESULT DIALOG 0, 0, 323, 165
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,73,144,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,183,144,50,14
+    LISTBOX         IDC_LIST2,13,16,295,115,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOG_BOOST DIALOG 0, 0, 263, 121
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Boosting"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,65,100,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,143,100,50,14
+    EDITTEXT        IDC_EDIT1,129,58,60,18,ES_AUTOHSCROLL
+    CONTROL         "Hyperplan",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,29,12,48,10
+    CONTROL         "HyperInterval",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,29,25,58,10
+    CONTROL         "Hyperrectangle",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,29,38,64,10
+    CONTROL         "Combination",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,123,13,71,10
+    LTEXT           "Nombre d'iterations",IDC_STATIC,25,63,86,8
+    CONTROL         "Version binaire",IDC_CHECK_BIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,37,62,10
+    PUSHBUTTON      "*.boost",IDC_BUTTON_FIC,206,7,50,14
+END
+
+IDD_DIALOG_GAUSS DIALOGEX 0, 0, 225, 121
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Génère Gaussienne"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,52,100,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,127,100,50,14
+    EDITTEXT        IDC_EDIT4,137,14,65,14,ES_AUTOHSCROLL
+    LTEXT           "Nombre d'échantillons",IDC_STATIC,25,16,81,12
+    EDITTEXT        IDC_EDIT5,137,38,65,14,ES_AUTOHSCROLL
+    LTEXT           "Préfixe fichier",IDC_STATIC,25,38,81,12
+    LTEXT           "Nombre de classes (2 à 10)",IDC_STATIC,26,63,91,12
+    EDITTEXT        IDC_EDIT_NB_CLASSES,136,60,65,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_PROGRESS DIALOGEX 0, 0, 279, 66
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Progression de la phase de sélection de paramètres"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Progress1",IDC_PROGRESS_BAR,"msctls_progress32",WS_BORDER,25,24,224,11
+    LTEXT           "Static",IDC_TEXTE,26,51,226,8
+END
+
+IDD_RANDOM_FOREST_SETTINGS DIALOGEX 0, 0, 293, 170
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Random Forest Settings"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "Max Depth ( 5 - 20)",IDC_STATIC,10,10,100,12
+    EDITTEXT        IDC_EDIT_MAX_DEPTH,143,10,100,14,ES_AUTOHSCROLL
+    LTEXT           "Min Samples per Node (1 - 10)",IDC_STATIC,10,30,100,12
+    EDITTEXT        IDC_EDIT_MIN_SAMPLE_COUNT,143,30,100,14,ES_AUTOHSCROLL
+    LTEXT           "Nombre max d'arbres",IDC_STATIC,10,50,100,12
+    EDITTEXT        IDC_EDIT_MAX_CATEGORIES,143,50,100,14,ES_AUTOHSCROLL
+    LTEXT           "Active Variables  (racine(Nb attributs))",IDC_STATIC,10,70,126,12
+    EDITTEXT        IDC_EDIT_ACTIVE_VAR_COUNT,143,70,100,14,ES_AUTOHSCROLL
+    LTEXT           "Forest Accuracy:",IDC_STATIC,10,90,100,12,WS_DISABLED
+    EDITTEXT        IDC_EDIT_FOREST_ACCURACY,143,90,100,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Use Surrogates (1/0):",IDC_STATIC,10,110,100,12
+    DEFPUSHBUTTON   "OK",IDOK,91,137,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,151,137,50,14
+    CONTROL         "En cas de valeur manquante",IDC_EDIT_USE_SURROGATES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,112,107,10
+END
+
+IDD_DIALOG_SLIDER DIALOGEX 0, 0, 309, 117
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,101,96,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,166,96,50,14
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,7,24,295,15
+    LTEXT           "Static",IDC_TEXTE,15,47,104,8
+    LTEXT           "Static",IDC_AFFICHEERREUR,155,47,134,36
+    LTEXT           "Faites glisser le curseur puis relâchez la souris et attendez",IDC_TEXTE2,57,7,204,8
+END
+
+IDD_DIALOG_CONFIG_GEN DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configuration du programme"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,198,155,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,252,155,50,14
+    LTEXT           "Largeur et hauteur de la fenetre 3D",IDC_STATIC,7,29,157,8
+    EDITTEXT        IDC_EDIT_WIN,203,28,84,14,ES_AUTOHSCROLL
+    LTEXT           "Transparence des frontières en 3D (0.1 à 0.99)",IDC_STATIC,7,53,157,8
+    LTEXT           "Taille de la grille 3D (30 = rapide 300=très lent)",IDC_STATIC,7,74,157,8
+    EDITTEXT        IDC_EDIT_TR,203,49,84,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_GRID,203,70,84,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,100,18,10
+    LTEXT           "Anime la rotation 3D automatiquement",IDC_STATIC,7,100,157,8
+    LTEXT           "En 3D, visualise les données uniquement",IDC_STATIC,7,122,157,8
+    CONTROL         "",IDC_CHECK_DATAONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,121,18,10
+    LTEXT           "Nombre de threads",IDC_STATIC,7,7,157,8
+    EDITTEXT        IDC_EDIT_THREAD,203,7,84,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_SEGMENTATION_LIVE DIALOGEX 0, 0, 309, 195
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Apprentissage segmentation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,104,174,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,158,174,50,14
+    EDITTEXT        IDC_EDIT_LARG_FEN,209,18,40,12,ES_AUTOHSCROLL
+    LTEXT           "Largeur des sous-fenêtres (2 - 32)",IDC_STATIC,50,20,112,8
+    LTEXT           "Nombre d'échantillons aléatoires  (100 - 10000)",IDC_STATIC,50,39,152,8
+    LTEXT           "Nombre de classes (2 - 32)",IDC_STATIC,50,60,86,8
+    EDITTEXT        IDC_EDIT_NB_ECH,209,37,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_NB_CLUSTERS,209,58,40,12,ES_AUTOHSCROLL
+    CONTROL         "Lab",IDC_RADIO_LAB,"Button",BS_AUTORADIOBUTTON | WS_GROUP,59,95,27,10
+    CONTROL         "HSV",IDC_RADIO_HSV,"Button",BS_AUTORADIOBUTTON,59,106,29,10
+    CONTROL         "RGB",IDC_RADIO_RGB,"Button",BS_AUTORADIOBUTTON,59,117,29,10
+    CONTROL         "YCRCB",IDC_RADIO_YCRCB,"Button",BS_AUTORADIOBUTTON,59,129,38,10
+    GROUPBOX        "Choix de l'espace couleur",IDC_STATIC,43,79,99,67
+    CONTROL         "Données seules en 3D (pas de frontière)",IDC_CHECK1,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,154,180,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 6,0,0,0
+ PRODUCTVERSION 6,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040c04b0"
+        BEGIN
+            VALUE "CompanyName", "Imvia"
+            VALUE "FileDescription", "Application MFC Decid"
+            VALUE "FileVersion", "7.0.0.0"
+            VALUE "InternalName", "Decid"
+            VALUE "LegalCopyright", "Copyright (C) 2001-2025"
+            VALUE "OriginalFilename", "Decid.EXE"
+            VALUE "ProductName", "Application Decid"
+            VALUE "ProductVersion", "7.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x40c, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 115
+    END
+
+    IDD_CONFIGPOLY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 334
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 306
+    END
+
+    IDD_CHOIXCLASS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 175
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 80
+    END
+
+    IDD_DIALVAL, DIALOG
+    BEGIN
+    END
+
+    IDD_DIALOG_2VAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_DIALOG_CONFIG_NEURONE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 434
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 282
+    END
+
+    IDD_DIALOG_APPREND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 278
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 170
+    END
+
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_DIALOG_SVM_PARA, DIALOG
+    BEGIN
+        LEFTMARGIN, 10
+        RIGHTMARGIN, 434
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 255
+    END
+
+    IDD_DIALOG_RESULT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 316
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 158
+    END
+
+    IDD_DIALOG_BOOST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 256
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 114
+    END
+
+    IDD_DIALOG_GAUSS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 218
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 114
+    END
+
+    IDD_DIALOG_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 272
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 59
+    END
+
+    IDD_RANDOM_FOREST_SETTINGS, DIALOG
+    BEGIN
+        RIGHTMARGIN, 292
+    END
+
+    IDD_DIALOG_SLIDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 110
+    END
+
+    IDD_DIALOG_CONFIG_GEN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
+
+    IDD_DIALOG_SEGMENTATION_LIVE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 188
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR1             CURSOR                  "res\\cursor1.cur"
+
+IDC_CURSOR2             CURSOR                  "res\\cursor2.cur"
+
+IDC_CURSOR3             CURSOR                  "res\\cursor3.cur"
+
+IDC_CURSOR4             CURSOR                  "res\\cursor4.cur"
+
+IDC_CURSOR5             CURSOR                  "res\\cursor5.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_PROGRESS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_CONFIG_NEURONE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_SVM_PARA AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_RANDOM_FOREST_SETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_SLIDER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_2VAL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_GAUSS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_CONFIG_GEN AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_SEGMENTATION_LIVE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDR_MAINFRAME           "Decid version 7.0.0.0 avec Opencv 4.10.0 et VTK 9.4"
+    IDR_DECIDTYPE           "\nDecid\nDecid"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_APP_TITLE       "Decid"
+    AFX_IDS_IDLEMESSAGE     "Prêt"
+END
+
+STRINGTABLE
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "MAJ"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "DEF"
+    ID_INDICATOR_OVR        "ECR"
+    ID_INDICATOR_REC        "ENR"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_NEW             "Crée un nouveau document\nNouveau"
+    ID_FILE_CLOSE           "Ferme le document actif\nFermer"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Affiche des informations sur le programme, le numéro de version et le copyright\nA propos de"
+    ID_APP_EXIT             "Ferme l'application ; propose d'enregistrer les documents\nQuitter"
+END
+
+STRINGTABLE
+BEGIN
+    ID_NEXT_PANE            "Passe au volet de fenêtre suivant\nVolet suivant"
+    ID_PREV_PANE            "Revient au volet précédent\nVolet précédent"
+END
+
+STRINGTABLE
+BEGIN
+    ID_WINDOW_ARRANGE       "Réorganise les icônes en bas de la fenêtre\nRéorganise les icônes"
+    ID_WINDOW_CASCADE       "Réorganise les fenêtres en cascade\nCascade"
+    ID_WINDOW_TILE_HORZ     "Réorganise les fenêtres en une mosaïque\nMosaïque"
+    ID_WINDOW_TILE_VERT     "Réorganise les fenêtres en une mosaïque\nMosaïque"
+    ID_WINDOW_SPLIT         "Réorganise les fenêtres en une mosaïque\nMosaïque"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Efface la sélection\nEffacer"
+    ID_EDIT_CLEAR_ALL       "Efface tout\nEffacer tout"
+    ID_EDIT_COPY            "Copie la sélection et la place dans le Presse-papiers\nCopier"
+    ID_EDIT_CUT             "Supprime la sélection et la place dans le Presse-papiers\nCouper"
+    ID_EDIT_FIND            "Recherche le texte spécifié\nRechercher"
+    ID_EDIT_PASTE           "Insère le contenu du Presse-papiers\nColler"
+    ID_EDIT_REPEAT          "Répète la dernière action\nRépéter"
+    ID_EDIT_REPLACE         "Remplace le texte spécifique par un texte différent\nRemplacer"
+    ID_EDIT_SELECT_ALL      "Sélectionne le document entier\nSélectionner tout"
+    ID_EDIT_UNDO            "Annule la dernière action\nAnnuler"
+    ID_EDIT_REDO            "Rétablit l'action précédemment annulée\nRétablir"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_TOOLBAR         "Affiche ou masque la barre d'outils\nBarre d'outils"
+    ID_VIEW_STATUS_BAR      "Affiche ou masque la barre d'état\nBarre d'état"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCSIZE          "Change la taille de la fenêtre"
+    AFX_IDS_SCMOVE          "Change la position de la fenêtre"
+    AFX_IDS_SCMINIMIZE      "Réduit la fenêtre en icône"
+    AFX_IDS_SCMAXIMIZE      "Agrandit la fenêtre au format de l'écran"
+    AFX_IDS_SCNEXTWINDOW    "Passe à la fenêtre de document suivante"
+    AFX_IDS_SCPREVWINDOW    "Passe à la fenêtre de document précédente"
+    AFX_IDS_SCCLOSE         "Ferme la fenêtre active et propose l'enregistrement des documents"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCRESTORE       "Restaure la fenêtre à sa taille d'origine"
+    AFX_IDS_SCTASKLIST      "Active la liste des tâches"
+    AFX_IDS_MDICHILD        "Active cette fenêtre"
+END
+
+#endif    // Français (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE 12, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\Decid.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.fra\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
