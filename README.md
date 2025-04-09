@@ -1,5 +1,10 @@
 # Decid3D
-Introduction to Machine Learning using Opencv and VTK for 3D visualisation  
+
+# **Introduction to Machine Learning using Opencv and VTK for 3D visualisation**  
+
+![SVM](images/svm.png "SVM bundaries")
+
+
 Install Visual studio 2022 redistribuable   
 Run Decid_3D_2025_mod.exe  
 Load csv file  
@@ -23,3 +28,7 @@ Example 5 samples, 3 classes, in 2D
 1,0.25,0.2  
 1,0.15,0.6  
 2,0.18,0.16  
+
+# Example of Neural Network bundaries
+
+![NN](images/neural%20network.png "Neural network bundaries")
