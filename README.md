@@ -17,7 +17,7 @@ This software is for teaching and testing purpose only.
 Used in Universite Bourgogne Europe  
 Master Traitement du Signal et des Images  
 
-CSV format : une sample = one line  
+CSV format : one sample = one line  
 class number, feature 1, feature 2  
 class number, feature 1, feature 2 
 
