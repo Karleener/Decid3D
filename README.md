@@ -4,12 +4,24 @@
 
 ![SVM](images/svm.png "SVM bundaries")
 
+Load VTK and compile 9.4.1 from  
+https://vtk.org/download/  
+
+and 
+Download compiled version of Opencv version 4.10 (file opencv_world4100.dll)  
+https://opencv.org/blog/opencv-4-10-0/  
+
+
+# Or (at your own risk)
 Load VTK and OPENCV4100 DLL files from this link  
 https://1drv.ms/u/c/e3cc9bf07901913a/ERJ1x21DXjRCltFea12UVqEBPsbI2w30c1NZB8vPzbkyFg?e=x78xDe  
 Unzip DLL in the same directory as Decid_3D_2025_mod.exe  
  
-Install Visual studio 2022 redistribuable   
+Install Visual studio 2022 redistribuable  
+https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170  
+
 Run Decid_3D_2025_mod.exe  
+
 Load csv file  
 Train and Test SVM, Multilayer perceptron (neural network), Knn, Random Forest, Boosting, EM (non supervised) etc   
 2D and 3D visualisation of data and classification boudary are available (data 2 features or 3 features)  
