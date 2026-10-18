@@ -1,0 +1,390 @@
+// Decid - fenetre principale : accueil, coquille de l'etude, ecrans outils, dialogues.
+import { Theme, CadreFenetre } from "theme.slint";
+import { Icone, Icones } from "icones.slint";
+import { Signature, Titre, Corps, Note, Bouton, Carte, CommandesFenetre, Defilement } from "composants.slint";
+import { Accueil } from "accueil.slint";
+import { EntreeMenu, Experience, BarreHaut, ListeMenu, BarreEtapes, BarreOutil, TableauExperiences,
+    CadreDialogue, Toast } from "coquille.slint";
+import { APropos, Raccourcis, Preferences, DialoguePreferences, Guide, DialogueGuide, Exporter, Artefact, DialogueExporter } from "annexes.slint";
+import { Etude, JeuBiblio, Fait, Famille, ValeurReglage, LigneConfusion, VueDonnees, VueModele, VueResultats } from "etude.slint";
+import { Decouvrir, Scenario, Pari, EcranDecouvrir } from "decouvrir.slint";
+import { BacASable, ParametreSaisi, OutilBacASable } from "outils/bac-a-sable.slint";
+import { Validation, Pli, LigneBalayage, OutilValidation } from "outils/validation.slint";
+import { Trace, Etiquette } from "graphique.slint";
+import { PasAPas, OutilPasAPas } from "outils/pas-a-pas.slint";
+import { Regression, Mesure, Essai, OutilRegression } from "outils/regression.slint";
+import { Generateur, ClasseGen, OutilGenerateur } from "outils/generateur.slint";
+import { Decision, ClassePredite, LigneDecidee, OutilDecision } from "outils/decision.slint";
+import { AtelierImage, Zone, PartClasse, OutilAtelierImage } from "outils/atelier-image.slint";
+export { Theme, EntreeMenu, Experience, Etude, JeuBiblio, Fait, Famille, ValeurReglage, LigneConfusion, Decouvrir, Scenario, Pari, BacASable, ParametreSaisi, Validation, Pli, LigneBalayage, Trace, Etiquette, PasAPas, Regression, Mesure, Essai, Generateur, ClasseGen, Decision, ClassePredite, LigneDecidee, AtelierImage, Zone, PartClasse, Preferences, Guide, Exporter, Artefact, CadreFenetre }
+
+export component Fenetre inherits Window {
+    in property <string> titre-projet;             // « projet • » si modifie, vide sans projet
+    title: titre-projet == "" ? "Decid" : titre-projet + " — Decid";
+    icon: @image-url("marque/decid-icone-app-256.png");
+    preferred-width: 1440px;
+    preferred-height: 900px;
+    min-width: 960px;
+    min-height: 640px;
+    background: Theme.surface-0;
+    default-font-family: Theme.police-texte;
+
+    // --- etat de navigation
+    in-out property <string> ecran: "accueil";       // accueil | decouvrir | etude
+    in-out property <string> vue: "etape";           // etape | outil | experiences
+    in-out property <string> etape: "donnees";       // donnees | modele | resultats
+    in-out property <string> outil;                   // identifiant de l'ecran outil affiche
+    in-out property <string> vue-precedente: "etape";
+    in-out property <int> sous-vue-donnees: 0;      // 0 bibliotheque, 1 importer
+    in-out property <string> dialogue;                // "" : aucun
+    property <string> fil: Etude.jeu-nom + " · " + Etude.protocole;
+
+    // --- experiences de la seance (tenues par le C++)
+    in property <[Experience]> experiences;
+    in-out property <int> courante: -1;
+    in property <[EntreeMenu]> menu-experiences;
+
+    // --- toast
+    in-out property <string> toast-texte;
+    in-out property <bool> toast-visible: false;
+
+    callback commande(string);          // actions tenues par le C++ (projet, plein ecran, experience k...)
+    // confirmation avant de perdre des modifications (le C++ pose la question, puis recoit la reponse)
+    in-out property <string> confirmation;
+    in property <string> confirmation-action: "Abandonner les modifications";
+    callback confirmer(bool);
+    callback ouvrir-projet();
+    callback preferences-changees();
+    callback outil-ouvert(string);       // le C++ prepare l'outil (liste des modeles entraines, etc.)
+    callback dialogue-ouvert(string);    // le C++ prepare le dialogue (guide, export)
+
+    // --- menus de la barre (entrees)
+    property <[string]> menus: ["Fichier", "Édition", "Affichage", "Expériences", "Outils", "Aide"];
+    in-out property <int> menu-ouvert: -1;
+    property <length> menu-x;
+    property <[EntreeMenu]> m-fichier: [
+        { libelle: "Nouveau projet", raccourci: "Ctrl+N", action: "nouveau" },
+        { libelle: "Ouvrir un projet…", raccourci: "Ctrl+O", action: "ouvrir" },
+        { libelle: "Enregistrer", raccourci: "Ctrl+S", action: "enregistrer" },
+        { libelle: "Enregistrer sous…", raccourci: "Ctrl+Maj+S", action: "enregistrer-sous" },
+        { separateur: true },
+        { libelle: "Importer un CSV…", raccourci: "F3", action: "importer" },
+        { libelle: "Importer .cmc / .lim / .dat…", action: "importer" },
+        { libelle: "Exporter les résultats…", action: "exporter" },
+        { libelle: "Appliquer un modèle à un fichier…", action: "decision" },
+        { separateur: true },
+        { libelle: "Retour à l’accueil", action: "accueil" },
+    ];
+    property <[EntreeMenu]> m-edition: [
+        { libelle: "Annuler", raccourci: "Ctrl+Z", action: "annuler" },
+        { separateur: true },
+        { libelle: "Générer : gaussiennes 2D à la souris", action: "generateur-2d" },
+        { libelle: "Générer : gaussiennes 3D", action: "generateur-3d" },
+        { libelle: "Générer : spirales 3D", action: "generateur-spirales" },
+    ];
+    property <[EntreeMenu]> m-affichage: [
+        { libelle: "Thème clair / sombre", action: "theme" },
+        { libelle: "Lecture facilitée", action: "lecture" },
+        { separateur: true },
+        { libelle: "Rafraîchir", raccourci: "F1", action: "rafraichir" },
+        { libelle: "Plein écran", raccourci: "F2", action: "plein-ecran" },
+        { libelle: "Préférences…", action: "preferences" },
+    ];
+    property <[EntreeMenu]> m-outils: [
+        { libelle: "Bac à sable", action: "bac-a-sable" },
+        { libelle: "Pas à pas", raccourci: "F5", action: "pas-a-pas" },
+        { libelle: "Validation croisée et balayage", action: "validation" },
+        { libelle: "Régression", action: "regression" },
+        { libelle: "Atelier image (webcam, segmentation)", action: "atelier-image" },
+    ];
+    property <[EntreeMenu]> m-aide: [
+        { libelle: "Raccourcis clavier", action: "raccourcis" },
+        { libelle: "Guide de TP", action: "guide" },
+        { libelle: "À propos de Decid", action: "a-propos" },
+    ];
+    pure function entrees(i: int) -> [EntreeMenu] {
+        if (i == 0) { return m-fichier; }
+        if (i == 1) { return m-edition; }
+        if (i == 2) { return m-affichage; }
+        if (i == 3) { return menu-experiences; }
+        if (i == 4) { return m-outils; }
+        m-aide
+    }
+
+    pure function titre-outil(id: string) -> string {
+        if (id == "bac-a-sable") { return "Bac à sable"; }
+        if (id == "pas-a-pas") { return "Pas à pas"; }
+        if (id == "validation") { return "Validation croisée et balayage"; }
+        if (id == "regression") { return "Régression"; }
+        if (id == "atelier-image") { return "Atelier image"; }
+        if (id == "decision") { return "Appliquer un modèle"; }
+        if (id == "generateur") { return "Générer des données"; }
+        id
+    }
+    pure function outil-porte(id: string) -> bool {
+        id == "bac-a-sable" || id == "validation" || id == "pas-a-pas" || id == "regression" || id == "generateur" || id == "decision" || id == "atelier-image"
+    }
+    pure function titre-dialogue(id: string) -> string {
+        if (id == "preferences") { return "Préférences"; }
+        if (id == "raccourcis") { return "Raccourcis clavier"; }
+        if (id == "guide") { return "Guide de TP"; }
+        if (id == "a-propos") { return "À propos de Decid"; }
+        if (id == "exporter") { return "Exporter les résultats"; }
+        id
+    }
+
+    // un outil s'ouvre en plein ecran au-dessus de l'etude ; Retour revient a la vue quittee
+    public function ouvrir-outil(id: string) {
+        if (vue == "etape") { vue-precedente = "etape"; }
+        ecran = "etude"; outil = id; vue = "outil"; dialogue = "";
+        outil-ouvert(id);
+    }
+    public function ouvrir-experiences() {
+        if (vue != "experiences") { vue-precedente = vue == "outil" ? "etape" : vue; }
+        ecran = "etude"; vue = "experiences"; dialogue = "";
+    }
+    public function montrer-toast(t: string) { toast-texte = t; toast-visible = true; minuteur-toast.running = false; minuteur-toast.running = true; }
+
+    public function executer(a: string) {
+        menu-ouvert = -1;
+        if (a == "theme") { Theme.sombre = !Theme.sombre; preferences-changees(); }
+        else if (a == "lecture") { Theme.facile = !Theme.facile; preferences-changees(); }
+        else if (a == "accueil") { ecran = "accueil"; dialogue = ""; }
+        else if (a == "experiences") { ouvrir-experiences(); }
+        else if (a == "generateur-2d" || a == "generateur-3d" || a == "generateur-spirales") {
+            ouvrir-outil("generateur");
+            Generateur.choisir-mode(a == "generateur-2d" ? 0 : a == "generateur-3d" ? 1 : 2);
+        }
+        else if (a == "importer") { ecran = "etude"; vue = "etape"; etape = "donnees"; sous-vue-donnees = 1; dialogue = ""; }
+        else if (a == "bac-a-sable" || a == "pas-a-pas" || a == "validation" || a == "regression" || a == "atelier-image" || a == "decision" || a == "generateur") { ouvrir-outil(a); }
+        else if (a == "preferences" || a == "raccourcis" || a == "guide" || a == "a-propos" || a == "exporter") { dialogue = a; dialogue-ouvert(a); }
+        else if (a == "etape:donnees" || a == "etape:modele" || a == "etape:resultats") {
+            ecran = "etude"; vue = "etape"; dialogue = "";
+            etape = a == "etape:donnees" ? "donnees" : a == "etape:modele" ? "modele" : "resultats";
+        }
+        else { commande(a); }
+    }
+
+    // --- clavier : Echap ferme d'abord le dialogue puis le menu ; raccourcis globaux
+    clavier := FocusScope {
+        key-pressed(e) => {
+            if (e.text == Key.Escape) {
+                if (root.confirmation != "") { root.confirmer(false); return accept; }
+                if (root.dialogue != "") { root.dialogue = ""; return accept; }
+                if (root.menu-ouvert >= 0) { root.menu-ouvert = -1; return accept; }
+                return reject;
+            }
+            if (e.text == Key.F1) { root.executer("rafraichir"); return accept; }
+            if (e.text == Key.F2) { root.executer("plein-ecran"); return accept; }
+            if (e.text == Key.F3) { root.executer("importer"); return accept; }
+            if (e.text == Key.F4) { if (root.ecran == "etude") { root.vue = "etape"; root.etape = "modele"; Etude.entrainer(); } return accept; }
+            if (e.text == Key.F5) {
+                if (root.ecran == "etude" && root.vue == "outil" && root.outil == "pas-a-pas") { PasAPas.une-etape(); } else { root.executer("pas-a-pas"); }
+                return accept;
+            }
+            if (e.text == Key.F6) {
+                if (root.ecran == "etude" && root.vue == "outil" && root.outil == "pas-a-pas") { PasAPas.reinitialiser(); } else { root.executer("pas-a-pas"); }
+                return accept;
+            }
+            if (e.modifiers.control && !e.modifiers.alt) {
+                if (e.text == "n" || e.text == "N") { root.executer("nouveau"); return accept; }
+                if (e.text == "o" || e.text == "O") { root.executer("ouvrir"); return accept; }
+                if (e.text == "s" || e.text == "S") { root.executer(e.modifiers.shift ? "enregistrer-sous" : "enregistrer"); return accept; }
+                if (e.text == "z" || e.text == "Z") { root.executer("annuler"); return accept; }
+            }
+            reject
+        }
+
+        // --- barre de titre : un appui deplace la fenetre, un double appui l'agrandit (le C++ s'en charge) ;
+        //     les menus et les boutons poses au-dessus gardent leurs clics
+        TouchArea {
+            x: 0; y: 0;
+            width: root.width;
+            height: CadreFenetre.hauteur;
+            pointer-event(e) => {
+                if (e.button == PointerEventButton.left && e.kind == PointerEventKind.down) { CadreFenetre.commande("glisser"); }
+            }
+        }
+
+        if root.ecran == "accueil": Accueil {
+            decouvrir => { root.ecran = "decouvrir"; }
+            etude => { root.ecran = "etude"; root.vue = "etape"; }
+            ouvrir-projet => { root.ouvrir-projet(); }
+            preferences-changees => { root.preferences-changees(); }
+        }
+
+        if root.ecran == "decouvrir": EcranDecouvrir {
+            accueil => { root.ecran = "accueil"; }
+            preferences-changees => { root.preferences-changees(); }
+        }
+
+        if root.ecran == "etude": Rectangle {
+            bloc-0 := VerticalLayout {
+                BarreHaut {
+                    menus: root.menus;
+                    menu-ouvert: root.menu-ouvert;
+                    projet: root.titre-projet;
+                    accueil => { root.executer("accueil"); }
+                    ouvrir-menu(i, x) => { root.menu-ouvert = root.menu-ouvert == i ? -1 : i; root.menu-x = x; }
+                    survol-menu(i, x) => { if (root.menu-ouvert >= 0) { root.menu-ouvert = i; root.menu-x = x; } }
+                    preferences-changees => { root.preferences-changees(); }
+                }
+                // --- les trois etapes
+                if root.vue == "etape": Rectangle {
+                    vertical-stretch: 1;
+                    if root.etape == "donnees": VueDonnees {
+                        sous-vue: root.sous-vue-donnees;
+                        sous-vue-choisie(i) => { root.sous-vue-donnees = i; }
+                        choisir-modele => { root.etape = "modele"; }
+                    }
+                    if root.etape == "modele": VueModele { }
+                    if root.etape == "resultats": VueResultats { aller(e) => { root.etape = e; } }
+                }
+                if root.vue == "etape": BarreEtapes {
+                    etape: root.etape;
+                    fil: root.fil;
+                    choisir(c) => { root.etape = c; }
+                }
+                // --- ecran outil
+                if root.vue == "outil": Rectangle {
+                    vertical-stretch: 1;
+                    VerticalLayout {
+                        padding-left: Theme.e-xl; padding-right: Theme.e-xl; padding-top: Theme.e-lg; padding-bottom: Theme.e-lg;
+                        spacing: Theme.e-lg;
+                        alignment: root.outil-porte(root.outil) ? stretch : start;
+                        if root.outil == "bac-a-sable": OutilBacASable { vertical-stretch: 1; }
+                        if root.outil == "validation": OutilValidation { vertical-stretch: 1; }
+                        if root.outil == "pas-a-pas": OutilPasAPas { vertical-stretch: 1; }
+                        if root.outil == "regression": OutilRegression { vertical-stretch: 1; }
+                        if root.outil == "generateur": OutilGenerateur { vertical-stretch: 1; }
+                        if root.outil == "decision": OutilDecision { vertical-stretch: 1; }
+                        if root.outil == "atelier-image": OutilAtelierImage { vertical-stretch: 1; }
+                        if !root.outil-porte(root.outil): Carte {
+                            height: c.preferred-height;
+                            c := VerticalLayout { padding: Theme.e-lg; Corps { text: "Outil indisponible."; } }
+                        }
+                    }
+                }
+                if root.vue == "outil": BarreOutil { titre: root.titre-outil(root.outil); retourner => { root.vue = root.vue-precedente; } }
+                // --- ecran Experiences
+                if root.vue == "experiences": Rectangle {
+                    vertical-stretch: 1;
+                    Defilement {
+                        width: root.width;
+                        content-width: self.width;
+                        content-height: col.preferred-height;
+                        col := VerticalLayout {
+                            padding-left: Theme.e-xl; padding-right: Theme.e-xl; padding-top: Theme.e-lg; padding-bottom: Theme.e-xl;
+                            spacing: Theme.e-lg;
+                            alignment: start;
+                            if root.experiences.length == 0: Carte {
+                                height: vide.preferred-height;
+                                vide := VerticalLayout {
+                                    padding: Theme.e-lg;
+                                    spacing: Theme.e-sm;
+                                    Titre { text: "Aucune expérience pour l’instant"; }
+                                    Corps { text: "Chaque entraînement ajoute ici une expérience : ses données, son protocole, son modèle et son score. Vous pourrez les rouvrir et les comparer."; }
+                                    HorizontalLayout { alignment: start; Bouton { genre: "principal"; icone: Icones.fleche; texte: "Choisir des données"; clic => { root.vue = "etape"; root.etape = "donnees"; } } }
+                                }
+                            }
+                            if root.experiences.length > 0: Carte {
+                                height: liste.preferred-height;
+                                liste := VerticalLayout {
+                                    padding: Theme.e-lg;
+                                    spacing: Theme.e-md;
+                                    HorizontalLayout {
+                                        Titre { text: "Expériences de la séance"; }
+                                        Note { text: root.experiences.length + (root.experiences.length > 1 ? " expériences" : " expérience"); horizontal-alignment: right; vertical-alignment: center; }
+                                    }
+                                    Note { text: "Une comparaison n’est directe que si les deux expériences utilisent les mêmes données et les mêmes points de test. Choisissez la référence dans la première colonne."; }
+                                    TableauExperiences {
+                                        experiences: root.experiences;
+                                        courante: root.courante;
+                                        reference: max(0, root.courante);
+                                        ouvrir(k) => { root.commande("exp:" + k); }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- liste deroulante du menu ouvert (au-dessus de tout, un clic ailleurs la ferme)
+        if root.menu-ouvert >= 0 && root.ecran == "etude": TouchArea { clicked => { root.menu-ouvert = -1; } }
+        if root.menu-ouvert >= 0 && root.ecran == "etude": ListeMenu {
+            x: root.menu-x;
+            y: 50px;
+            entrees: root.entrees(root.menu-ouvert);
+            choisir(a) => { root.executer(a); }
+        }
+
+        // --- dialogue
+        if root.dialogue != "": CadreDialogue {
+            titre: root.titre-dialogue(root.dialogue);
+            fermer => { root.dialogue = ""; }
+            if root.dialogue == "a-propos": APropos { }
+            if root.dialogue == "raccourcis": Raccourcis { }
+            if root.dialogue == "preferences": DialoguePreferences { preferences-changees => { root.preferences-changees(); } }
+            if root.dialogue == "guide": DialogueGuide { aller(a) => { root.dialogue = ""; root.executer(a); } }
+            if root.dialogue == "exporter": DialogueExporter { }
+        }
+
+        // --- confirmation
+        if root.confirmation != "": Rectangle {
+            background: Theme.voile-dialogue;
+            TouchArea { }
+            Rectangle {
+                width: min(520px, root.width - 2 * Theme.e-lg);
+                height: conf.preferred-height;
+                background: Theme.surface-1;
+                border-width: 1px; border-color: Theme.filet-fort; border-radius: Theme.r-xl;
+                drop-shadow-blur: 32px; drop-shadow-offset-y: 12px; drop-shadow-color: Theme.ombre;
+                conf := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-md;
+                    Titre { text: "Modifications non enregistrées"; }
+                    Corps { text: root.confirmation; }
+                    HorizontalLayout {
+                        alignment: end; spacing: Theme.e-sm;
+                        Bouton { genre: "fantome"; texte: "Annuler"; clic => { root.confirmer(false); } }
+                        Bouton { genre: "principal"; texte: root.confirmation-action; clic => { root.confirmer(true); } }
+                    }
+                }
+            }
+        }
+
+        // --- toast
+        if root.toast-visible: Toast {
+            x: (root.width - self.width) / 2;
+            y: root.height - self.height - 84px;
+            texte: root.toast-texte;
+        }
+
+        // --- boutons de la fenetre, toujours accessibles
+        CommandesFenetre {
+            x: root.width - self.width;
+            y: 0;
+            encre: root.ecran == "accueil" ? Theme.accueil-texte-2 : Theme.encre-2;
+            voile: root.ecran == "accueil" ? Theme.accueil-voile-fort : Theme.surface-3;
+        }
+    }
+    minuteur-toast := Timer {
+        interval: 2800ms;
+        running: false;
+        triggered => { root.toast-visible = false; self.running = false; }
+    }
+    // le titre (projet modifie ou non) n'est recalcule que lorsque l'etude change : aucun minuteur au repos
+    property <string> empreinte-etude: Etude.jeu + "|" + Etude.jeu-nom + "|" + Etude.partage + "|" + Etude.famille + "|" + Etude.valeur
+        + "|" + root.experiences.length + "|" + root.courante;
+    changed empreinte-etude => { commande("titre"); }
+
+    // la webcam s'eteint des qu'on quitte l'atelier image (autre outil, etape, accueil...)
+    function verifier-camera() {
+        if (AtelierImage.camera && !(ecran == "etude" && vue == "outil" && outil == "atelier-image")) { AtelierImage.eteindre(); }
+    }
+    changed ecran => { verifier-camera(); }
+    changed vue => { verifier-camera(); }
+    changed outil => { verifier-camera(); }
+    init => { clavier.focus(); }
+}

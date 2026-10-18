@@ -1,0 +1,104 @@
+// Decid - jetons du systeme de design.
+// Palette du contributeur : Deep Anchor #151946 · Oxide Crimson #7C170D · Bone Linen #EBE1D5.
+// Deux themes (sombre par defaut, clair) et la lecture facilitee. Toute couleur de l'interface passe par ce global.
+import "polices/manrope-regular.ttf";
+import "polices/manrope-semibold.ttf";
+import "polices/space-grotesk-medium.ttf";
+import "polices/space-grotesk-bold.ttf";
+
+export global Theme {
+    in-out property <bool> sombre: true;
+    in-out property <bool> facile: false;   // lecture facilitee (dyslexie)
+
+    // --- palette de marque
+    out property <color> anchor: #151946;
+    out property <color> anchor-deep: #0D1033;
+    out property <color> crimson: #7C170D;
+    out property <color> crimson-vif: #A3271A;
+    out property <color> linen: #EBE1D5;
+    out property <color> linen-clair: #F6F1EA;
+    out property <color> prune: #3A1427;    // relais du degrade de l'accueil sombre
+
+    // --- typographie (la lecture facilitee passe a Verdana, corps et interlettrage augmentes)
+    out property <string> police-titre: facile ? "Verdana" : "Space Grotesk";
+    out property <string> police-texte: facile ? "Verdana" : "Manrope";
+    out property <length> texte-xs: facile ? 14px : 12px;
+    out property <length> texte-sm: facile ? 15px : 13px;
+    out property <length> texte-corps: facile ? 16px : 14px;
+    out property <length> texte-md: facile ? 18px : 16px;
+    out property <length> texte-lg: facile ? 22px : 20px;
+    out property <length> texte-xl: facile ? 28px : 26px;
+    out property <length> texte-2xl: 34px;
+    out property <length> texte-hero: facile ? 46px : 56px;
+    out property <float> interligne: facile ? 1.8 : 1.5;
+    out property <length> interlettre: facile ? 0.6px : 0px;
+
+    // --- espacements, rayons, durees
+    out property <length> e-2xs: 4px;
+    out property <length> e-xs: 8px;
+    out property <length> e-sm: 12px;
+    out property <length> e-md: 16px;
+    out property <length> e-lg: 24px;
+    out property <length> e-xl: 32px;
+    out property <length> e-2xl: 48px;
+    out property <length> r-sm: 8px;
+    out property <length> r-md: 12px;
+    out property <length> r-lg: 16px;
+    out property <length> r-xl: 24px;
+    out property <duration> duree-courte: facile ? 1ms : 140ms;
+    out property <duration> duree-moyenne: facile ? 1ms : 240ms;
+
+    // --- surfaces et encres
+    out property <color> surface-0: sombre ? #0B0E2A : linen;
+    out property <color> surface-1: sombre ? anchor : linen-clair;
+    out property <color> surface-2: sombre ? #1C2156 : #FCFAF7;
+    out property <color> surface-3: sombre ? #262C66 : #EFE6DB;
+    out property <color> surface-plot: sombre ? #0F1338 : #FBF8F4;
+    out property <color> filet: sombre ? linen.with-alpha(0.10) : anchor.with-alpha(0.10);
+    out property <color> filet-fort: sombre ? linen.with-alpha(0.20) : anchor.with-alpha(0.22);
+    out property <color> encre: sombre ? linen : anchor;
+    out property <color> encre-2: sombre ? linen.with-alpha(0.74) : anchor.with-alpha(0.76);
+    out property <color> encre-3: sombre ? linen.with-alpha(0.52) : anchor.with-alpha(0.56);
+    out property <color> accent: crimson;
+    out property <color> accent-survol: sombre ? crimson-vif : #5E1009;
+    out property <color> accent-texte: sombre ? #EE8B74 : crimson;
+    out property <color> sur-accent: sombre ? linen : linen-clair;
+    out property <color> focus: sombre ? #F0A08E : crimson-vif;
+    // palette categorielle des classes (memes teintes que les plans, contrastes verifies sur surface-plot)
+    out property <color> classe-0: sombre ? #F07A62 : #C2462F;
+    out property <color> classe-1: sombre ? #7FB2E8 : #3672B5;
+    out property <color> classe-2: sombre ? #F2C46B : #B8862A;
+    out property <color> classe-3: sombre ? #6CC4B4 : #2F8C7E;
+    out property <color> classe-4: sombre ? #A99BF0 : #6656C2;
+    out property <color> classe-5: sombre ? #E58FC0 : #B24C8A;
+    out property <color> accent-doux: sombre ? crimson-vif.with-alpha(0.22) : crimson.with-alpha(0.09);
+    out property <color> succes: sombre ? #8CC9A1 : #2E6B47;
+    out property <color> succes-doux: sombre ? #8CC9A1.with-alpha(0.14) : #2E6B47.with-alpha(0.10);
+    out property <color> alerte: sombre ? #E9B872 : #8A5A10;
+    out property <color> alerte-doux: sombre ? #E9B872.with-alpha(0.14) : #8A5A10.with-alpha(0.10);
+    out property <color> ombre: sombre ? #030414.with-alpha(0.45) : anchor.with-alpha(0.10);
+    out property <color> voile-dialogue: sombre ? #050616.with-alpha(0.62) : anchor.with-alpha(0.28);
+
+    // --- accueil (un jeu par theme)
+    out property <color> accueil-texte: sombre ? linen : anchor;
+    out property <color> accueil-texte-2: sombre ? linen.with-alpha(0.78) : anchor.with-alpha(0.72);
+    // sans flou d'arriere-plan dans Slint, les cartes sont un peu plus opaques
+    out property <color> accueil-carte: sombre ? anchor-deep.with-alpha(0.52) : #FCFAF7.with-alpha(0.70);
+    out property <color> accueil-carte-survol: sombre ? anchor-deep.with-alpha(0.66) : #FCFAF7.with-alpha(0.90);
+    out property <color> accueil-bord: sombre ? linen.with-alpha(0.16) : anchor.with-alpha(0.10);
+    out property <color> accueil-bord-fort: sombre ? linen.with-alpha(0.32) : anchor.with-alpha(0.22);
+    out property <color> accueil-voile: sombre ? linen.with-alpha(0.12) : anchor.with-alpha(0.07);
+    out property <color> accueil-voile-fort: sombre ? linen.with-alpha(0.20) : anchor.with-alpha(0.13);
+    out property <color> logo-bord: sombre ? linen.with-alpha(0) : anchor.with-alpha(0.12);
+}
+
+// La barre de menus tient lieu de barre de titre Windows (le C++ retire la legende native).
+export global CadreFenetre {
+    in property <bool> agrandie;
+    out property <length> hauteur: 56px;
+    out property <length> largeur-commandes: 3 * 46px;
+    out property <color> fermer-survol: #C42B1C;     // rouge du bouton Fermer de Windows 11
+    out property <color> fermer-appui: #B22A1D;
+    out property <color> fermer-encre: #FFFFFF;
+    callback commande(string);                       // glisser | reduire | agrandir | fermer
+}

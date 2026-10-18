@@ -1,0 +1,729 @@
+// Etapes de l'etude, branchees sur le vrai moteur :
+// le C++ (studio/src/Etude.cpp) remplit le global Etude et repond a ses rappels. Rien n'est precalcule.
+import { Theme } from "theme.slint";
+import { Icone, Icones } from "icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Champ, Pilules, Defileur, Defilement } from "composants.slint";
+
+export struct JeuBiblio { nom: string, resume: string, badge: string }
+export struct Fait { cle: string, valeur: string }
+export struct Famille { court: string, nom: string, etat: string }
+export struct ValeurReglage { libelle: string, detail: string }
+export struct LigneConfusion { reel: string, cellules: [int], total: int }
+
+export global Etude {
+    // --- donnees
+    in property <[JeuBiblio]> bibliotheque;
+    in-out property <int> jeu: 1;
+    in property <string> jeu-nom;
+    in property <string> jeu-desc;
+    in property <[Fait]> jeu-faits;
+    in property <image> apercu;
+    in property <string> apercu-legende;
+    in property <[string]> partages: ["50 % au hasard", "25 % au hasard", "75 % au hasard", "Début de chaque classe"];
+    in-out property <int> partage: 0;
+    in property <string> donnees-erreur;
+    callback choisir-jeu(int);
+    callback choisir-partage(int);
+    in property <string> protocole;            // description du partage du jeu courant
+    in property <[string]> attributs;          // attributs du jeu courant (axes du plan)
+    in-out property <int> axe-x: 0;
+    in-out property <int> axe-y: 1;
+    callback axes-changes();
+
+    // --- importer (le fichier n'est jamais modifie ; il devient le jeu courant avec « Utiliser ce jeu »)
+    in-out property <int> imp-mode: 0;          // 0 fichier CSV, 1 projet .cmc de l'ancien Decid
+    in property <string> imp-fichier;
+    in-out property <int> imp-en-tete: 0;       // 0 observation, 1 en-tete, 2 auto
+    in-out property <int> imp-separateur: 0;    // 0 virgule, 1 point-virgule, 2 tabulation, 3 espace
+    in-out property <string> imp-cible: "1";    // colonne de la classe (1 = premiere, format Decid)
+    in property <[string]> imp-lignes;
+    in property <[Fait]> imp-resume;
+    in property <string> imp-erreur;
+    in property <bool> imp-lu;
+    in-out property <int> imp-norm: 0;          // 0 min-max, 1 bornes d'un .lim, 2 aucune
+    in property <string> imp-lim;
+    in-out property <int> imp-ratio: 3;         // 1/8 a 7/8 de points d'apprentissage
+    in-out property <int> imp-methode: 0;       // 0 au hasard dans chaque classe, 1 premiers de chaque classe
+    in-out property <string> imp-graine: "42";
+    callback imp-choisir();
+    callback imp-choisir-lim();
+    callback imp-relire();
+    callback imp-utiliser();
+
+    // --- modele
+    in property <[Famille]> familles;
+    in-out property <int> famille: 0;
+    in property <string> reglage-nom;
+    in property <string> reglage-aide;
+    in property <[ValeurReglage]> valeurs;
+    in-out property <int> valeur: 0;
+    callback choisir-famille(int);
+    callback choisir-valeur(int);
+    callback entrainer();
+    // effet de chaque valeur : une frontiere reellement calculee par valeur, sur le jeu et le protocole courants
+    in property <[image]> vignettes;
+    in property <[string]> vignettes-scores;
+    in property <bool> effets-calcules;
+    callback voir-effets();
+    callback annuler-calcul();            // arrete le calcul en cours (le moteur ne publie rien)
+
+    // --- calcul en cours
+    in property <bool> occupe;
+    in property <string> phase;
+    in property <string> erreur;
+
+    // --- resultats (experience courante)
+    in property <bool> resultat-present;
+    in property <image> plan;
+    in property <string> plan-legende;
+    in property <string> score;
+    in property <string> score-detail;
+    in property <[string]> confusion-classes;
+    in property <[LigneConfusion]> confusion;
+    in property <string> confiance;
+    in property <string> temps-decision;
+    in property <[string]> titres-experiences;
+    in-out property <bool> interieur: false;        // montre l'interieur du modele (vecteurs de support, gaussiennes)
+    in property <bool> interieur-possible;
+    in property <string> interieur-texte;
+    in-out property <int> cellule-reel: -1;         // case de confusion choisie (-1 : aucune)
+    in-out property <int> cellule-predit: -1;
+    callback vue-plan-changee();
+    // reglage en direct (F4 de l'ancien Decid) : meme protocole, autre valeur, l'experience courante est remplacee
+    in property <string> direct-nom;
+    in property <[string]> direct-valeurs;
+    in-out property <int> direct-valeur;
+    callback regler-en-direct(int);
+    // vue 3D (jeux d'au moins 3 attributs) : volume de decision du moteur
+    in property <bool> vue-3d-possible;
+    in-out property <bool> vue-3d: false;
+    in-out property <bool> donnees-seules: false;
+    in property <image> image-3d;
+    in property <string> legende-3d;
+    callback tourner-3d(length, length);
+    callback zoomer-3d(float);
+    callback mode-3d-change();
+    in property <int> courante: -1;
+    callback choisir-experience(int);
+    callback changer(string);        // "modele" | "donnees"
+
+    // --- taille des plans (pixels logiques), pour un rendu net a la bonne resolution
+    callback taille-apercu(length, length);
+    callback taille-plan(length, length);
+}
+
+// Cadre d'un plan : fond, image calculee, legende
+component CadrePlan inherits Rectangle {
+    in property <image> source;
+    in property <string> legende;
+    callback taille(length, length);
+    background: Theme.surface-plot;
+    border-width: 1px;
+    border-color: Theme.filet;
+    border-radius: Theme.r-lg;
+    clip: true;
+    changed width => { root.taille(self.width, self.height); }
+    changed height => { root.taille(self.width, self.height); }
+    init => { root.taille(self.width, self.height); }
+    Image { width: parent.width; height: parent.height; source: root.source; image-fit: fill; }
+    Text {
+        x: Theme.e-sm; y: parent.height - self.height - Theme.e-sm;
+        width: parent.width - 2 * Theme.e-sm;
+        text: root.legende;
+        overflow: elide;
+        font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+    }
+}
+
+// Cadre de la vue 3D : glisser pour tourner, molette pour zoomer
+component Cadre3D inherits Rectangle {
+    property <length> dernier-x;
+    property <length> dernier-y;
+    background: Theme.surface-plot;
+    border-width: 1px;
+    border-color: Theme.filet;
+    border-radius: Theme.r-lg;
+    clip: true;
+    Image { width: parent.width; height: parent.height; source: Etude.image-3d; image-fit: fill; }
+    Text {
+        x: Theme.e-sm; y: parent.height - self.height - Theme.e-sm; width: parent.width - 2 * Theme.e-sm;
+        text: Etude.legende-3d; overflow: elide;
+        font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+    }
+    zone := TouchArea {
+        mouse-cursor: self.pressed ? grabbing : grab;
+        pointer-event(ev) => { if (ev.kind == PointerEventKind.down) { root.dernier-x = self.mouse-x; root.dernier-y = self.mouse-y; } }
+        moved => {
+            if (self.pressed) {
+                Etude.tourner-3d(self.mouse-x - root.dernier-x, self.mouse-y - root.dernier-y);
+                root.dernier-x = self.mouse-x; root.dernier-y = self.mouse-y;
+            }
+        }
+        scroll-event(ev) => { Etude.zoomer-3d(ev.delta-y > 0 ? 1 : -1); accept }
+    }
+    focus := FocusScope {
+        key-pressed(e) => {
+            if (e.text == Key.LeftArrow) { Etude.tourner-3d(-12px, 0px); return accept; }
+            if (e.text == Key.RightArrow) { Etude.tourner-3d(12px, 0px); return accept; }
+            if (e.text == Key.UpArrow) { Etude.tourner-3d(0px, -12px); return accept; }
+            if (e.text == Key.DownArrow) { Etude.tourner-3d(0px, 12px); return accept; }
+            reject
+        }
+    }
+}
+
+// Pilule (choix exclusif)
+component Pilule inherits Rectangle {
+    in property <string> texte;
+    in property <bool> choisie;
+    callback clic();
+    height: 30px;
+    width: t.preferred-width + 2 * Theme.e-sm;
+    border-radius: self.height / 2;
+    background: choisie ? Theme.surface-3 : zone.has-hover ? Theme.surface-2 : transparent;
+    accessible-role: radio-button;
+    accessible-label: texte;
+    accessible-checked: choisie;
+    t := Text { text: root.texte; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: root.choisie ? Theme.encre : Theme.encre-2; }
+    zone := TouchArea { mouse-cursor: pointer; clicked => { root.clic(); } }
+}
+
+component BandeauCalcul inherits Rectangle {
+    visible: Etude.occupe || Etude.erreur != "";
+    height: self.visible ? max(l.preferred-height, Etude.occupe ? 38px : 0px) + 16px : 0px;
+    border-radius: Theme.r-md;
+    background: Etude.erreur != "" ? Theme.alerte-doux : Theme.accent-doux;
+    if Etude.occupe: annuler := Bouton {
+        x: parent.width - self.width - 8px;
+        y: (parent.height - self.height) / 2;
+        genre: "fantome"; texte: "Annuler";
+        clic => { Etude.annuler-calcul(); }
+    }
+    l := Text {
+        x: Theme.e-md; width: parent.width - 2 * Theme.e-md - (Etude.occupe ? 110px : 0px);
+        y: (parent.height - self.height) / 2;
+        text: Etude.erreur != "" ? Etude.erreur : "Le moteur calcule : " + Etude.phase;
+        wrap: word-wrap;
+        font-family: Theme.police-texte; font-size: Theme.texte-sm;
+        color: Etude.erreur != "" ? Theme.alerte : Theme.accent-texte;
+    }
+}
+
+// ================================================================ Donnees
+export component VueDonnees inherits Rectangle {
+    in property <int> sous-vue: 0;           // 0 bibliotheque, 1 importer
+    callback sous-vue-choisie(int);
+    callback choisir-modele();
+    property <length> col-g: root.width > 1280px ? 280px : 240px;
+    property <length> col-d: 320px;
+    property <bool> etroit: root.width < 1100px;
+
+    // colonne gauche : bascule, puis liste des jeux
+    gauche := Carte {
+        x: Theme.e-lg; y: Theme.e-lg;
+        width: root.col-g;
+        height: root.height - 2 * Theme.e-lg;
+        VerticalLayout {
+            padding: Theme.e-md;
+            spacing: Theme.e-md;
+            Rectangle {
+                height: 40px;
+                border-radius: 20px;
+                background: Theme.surface-1;
+                border-width: 1px; border-color: Theme.filet;
+                HorizontalLayout {
+                    padding: 4px; spacing: 2px;
+                    for nom[i] in ["Bibliothèque", "Importer"]: Rectangle {
+                        border-radius: 16px;
+                        background: root.sous-vue == i ? Theme.surface-3 : transparent;
+                        accessible-role: tab; accessible-label: nom; accessible-checked: root.sous-vue == i;
+                        Text { text: nom; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: root.sous-vue == i ? Theme.encre : Theme.encre-2; overflow: elide; }
+                        TouchArea { mouse-cursor: pointer; clicked => { root.sous-vue-choisie(i); } }
+                    }
+                }
+            }
+            if root.sous-vue == 0: Defilement {
+                fond: Theme.surface-2;   // fondu des bords dans la couleur du conteneur
+                vertical-stretch: 1;
+                width: gauche.width - 2 * Theme.e-md;
+                content-width: self.width;
+                content-height: liste.preferred-height;
+                liste := VerticalLayout {
+                    spacing: 4px;
+                    for j[i] in Etude.bibliotheque: Rectangle {
+                        height: c.preferred-height + 20px;
+                        border-radius: Theme.r-md;
+                        background: Etude.jeu == i ? Theme.accent-doux : z.has-hover ? Theme.surface-3 : transparent;
+                        accessible-role: radio-button; accessible-label: j.nom; accessible-checked: Etude.jeu == i;
+                        c := VerticalLayout {
+                            x: Theme.e-sm; y: 10px; width: parent.width - 2 * Theme.e-sm;
+                            spacing: 2px;
+                            HorizontalLayout {
+                                Text { horizontal-stretch: 1; text: j.nom; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; overflow: elide; }
+                                if j.badge != "": Badge { texte: j.badge; }
+                            }
+                            Note { text: j.resume; font-size: Theme.texte-xs; }
+                        }
+                        z := TouchArea { mouse-cursor: pointer; clicked => { Etude.choisir-jeu(i); } }
+                    }
+                }
+            }
+            if root.sous-vue == 1: Rectangle {
+                vertical-stretch: 1;
+                bloc-0 := VerticalLayout {
+                    vertical-stretch: 1;
+                    spacing: Theme.e-sm;
+                    Titre { text: "Source"; corps: Theme.texte-md; }
+                    Pilules { options: ["Fichier CSV", "Projet .cmc"]; choisi <=> Etude.imp-mode; }
+                    Bouton {
+                        texte: Etude.imp-fichier != "" ? Etude.imp-fichier : Etude.imp-mode == 0 ? "Choisir un fichier CSV…" : "Choisir le fichier .cmc…";
+                        icone: Icones.dossier;
+                        clic => { Etude.imp-choisir(); }
+                    }
+                    if Etude.imp-mode == 1: Note { text: "Format de l’ancien Decid : le .cmc liste un fichier .dat par classe. S’ils ont changé de dossier, Decid les cherche à côté du .cmc. Aucun fichier n’est modifié."; font-size: Theme.texte-xs; }
+                    if Etude.imp-mode == 0: Rectangle {
+                        height: bloc-1.preferred-height;
+                        bloc-1 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            Rectangle { height: Theme.e-xs; }
+                            Titre { text: "Contrat de lecture"; corps: Theme.texte-md; }
+                            Note { text: "Première ligne"; font-size: Theme.texte-xs; }
+                            Pilules { options: ["observation", "en-tête", "auto"]; choisi <=> Etude.imp-en-tete; change => { Etude.imp-relire(); } }
+                            Note { text: "Séparateur"; font-size: Theme.texte-xs; }
+                            Pilules { options: [",", ";", "tab.", "espace"]; choisi <=> Etude.imp-separateur; change => { Etude.imp-relire(); } }
+                            Note { text: "Colonne de la classe (1 = première, format Decid)"; font-size: Theme.texte-xs; }
+                            Champ { texte <=> Etude.imp-cible; info: "Colonne de la classe"; genre: number; valide => { Etude.imp-relire(); } }
+                            HorizontalLayout { alignment: start; Bouton { texte: "Relire"; clic => { Etude.imp-relire(); } } }
+                        }
+                    }
+                    Rectangle { vertical-stretch: 1; }
+                }
+            }
+        }
+    }
+
+    // plan d'apercu (bibliotheque) ; lignes brutes du fichier (importer)
+    if root.sous-vue == 1: Carte {
+        x: gauche.x + gauche.width + Theme.e-lg; y: Theme.e-lg;
+        width: root.width - self.x - (root.etroit ? Theme.e-lg : root.col-d + 2 * Theme.e-lg);
+        height: root.etroit ? root.height * 0.55 : root.height - 2 * Theme.e-lg;
+        VerticalLayout {
+            padding: Theme.e-lg; spacing: Theme.e-sm;
+            HorizontalLayout {
+                Titre { text: "Lignes brutes"; corps: Theme.texte-md; }
+                Note { text: Etude.imp-lignes.length > 0 ? Etude.imp-lignes.length + " premières lignes" : ""; horizontal-alignment: right; vertical-alignment: center; font-size: Theme.texte-xs; }
+            }
+            if Etude.imp-lignes.length == 0: Corps { text: "Choisissez un fichier : ses premières lignes s’affichent ici, telles quelles."; font-size: Theme.texte-sm; }
+            Defilement {
+                fond: Theme.surface-2;   // fondu des bords dans la couleur du conteneur
+                vertical-stretch: 1;
+                content-height: brutes.preferred-height;
+                brutes := VerticalLayout {
+                    for l[i] in Etude.imp-lignes: HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Text { width: 28px; text: i + 1; horizontal-alignment: right; font-family: "Consolas"; font-size: Theme.texte-xs; color: Theme.encre-3; }
+                        Text { text: l; font-family: "Consolas"; font-size: Theme.texte-xs; color: Theme.encre-2; overflow: elide; }
+                    }
+                }
+            }
+        }
+    }
+    // apercu carre, centre dans la place libre : comme le plan des resultats, une unite horizontale
+    // vaut une unite verticale quelle que soit la taille de la fenetre (une spirale reste ronde)
+    property <length> apercu-x0: gauche.x + gauche.width + Theme.e-lg;
+    property <length> apercu-l: root.width - self.apercu-x0 - (root.etroit ? Theme.e-lg : root.col-d + 2 * Theme.e-lg);
+    property <length> apercu-h: root.etroit ? root.height * 0.55 : root.height - 2 * Theme.e-lg;
+    if root.sous-vue == 0: CadrePlan {
+        width: max(120px, min(root.apercu-l, root.apercu-h));
+        height: self.width;
+        x: root.apercu-x0 + (root.apercu-l - self.width) / 2;
+        y: Theme.e-lg + (root.apercu-h - self.height) / 2;
+        source: Etude.apercu;
+        legende: Etude.apercu-legende;
+        taille(l, h) => { Etude.taille-apercu(l, h); }
+    }
+
+    // importer : ce qui a ete lu, mise a l'echelle, partage, puis « Utiliser ce jeu »
+    if root.sous-vue == 1: Carte {
+        x: root.etroit ? gauche.x + gauche.width + Theme.e-lg : root.width - root.col-d - Theme.e-lg;
+        y: root.etroit ? root.height * 0.55 + 2 * Theme.e-lg : Theme.e-lg;
+        width: root.etroit ? root.width - self.x - Theme.e-lg : root.col-d;
+        height: min(lecture.preferred-height, root.height - self.y - Theme.e-lg);
+        Defilement {
+            fond: Theme.surface-2;   // fondu des bords dans la couleur du conteneur
+            content-height: lecture.preferred-height;
+            lecture := VerticalLayout {
+                padding: Theme.e-lg;
+                spacing: Theme.e-sm;
+                HorizontalLayout {
+                    Titre { text: "Ce que Decid a lu"; corps: Theme.texte-md; }
+                    if Etude.imp-lu: Badge { texte: "lu"; genre: "succes"; }
+                }
+                Note { text: "Même lecteur que le moteur : ce résumé est exactement ce qu’il apprendra."; font-size: Theme.texte-xs; }
+                for f in Etude.imp-resume: HorizontalLayout {
+                    padding-top: 4px; padding-bottom: 4px;
+                    Note { text: f.cle; vertical-alignment: center; font-size: Theme.texte-xs; }
+                    Text { horizontal-stretch: 1; text: f.valeur; horizontal-alignment: right; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                }
+                if Etude.imp-erreur != "": Text { text: Etude.imp-erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+                Rectangle { height: Theme.e-xs; }
+                Text { text: "Mise à l’échelle"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                Pilules { options: ["min-max", "fichier .lim", "aucune"]; choisi <=> Etude.imp-norm; }
+                if Etude.imp-norm == 1: Bouton { texte: Etude.imp-lim != "" ? Etude.imp-lim : "Choisir le fichier .lim…"; icone: Icones.dossier; clic => { Etude.imp-choisir-lim(); } }
+                Text { text: "Points d’apprentissage"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                Pilules { options: ["1/8", "2/8", "3/8", "4/8", "5/8", "6/8", "7/8"]; choisi <=> Etude.imp-ratio; }
+                Pilules { options: ["au hasard", "premiers de chaque classe"]; choisi <=> Etude.imp-methode; }
+                HorizontalLayout {
+                    spacing: Theme.e-sm;
+                    Note { text: "Graine"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                    Champ { texte <=> Etude.imp-graine; info: "Graine du tirage"; genre: number; }
+                }
+                HorizontalLayout {
+                    alignment: end; padding-top: Theme.e-sm;
+                    Bouton { genre: "principal"; actif: Etude.imp-lu; texte: "Utiliser ce jeu"; icone: Icones.fleche; clic => { Etude.imp-utiliser(); root.sous-vue-choisie(0); } }
+                }
+            }
+        }
+    }
+    // fiche du jeu, partage, suite
+    if root.sous-vue == 0: Carte {
+        x: root.etroit ? gauche.x + gauche.width + Theme.e-lg : root.width - root.col-d - Theme.e-lg;
+        y: root.etroit ? root.height * 0.55 + 2 * Theme.e-lg : Theme.e-lg;
+        width: root.etroit ? root.width - self.x - Theme.e-lg : root.col-d;
+        height: min(fiche.preferred-height, root.height - self.y - Theme.e-lg);
+        fiche := VerticalLayout {
+            padding: Theme.e-lg;
+            spacing: Theme.e-sm;
+            Titre { text: Etude.jeu-nom; }
+            Note { text: Etude.jeu-desc; }
+            for f in Etude.jeu-faits: VerticalLayout {
+                HorizontalLayout {
+                    padding-top: 8px; padding-bottom: 8px;
+                    Note { text: f.cle; vertical-alignment: center; }
+                    Text { horizontal-stretch: 1; text: f.valeur; horizontal-alignment: right; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; wrap: word-wrap; }
+                }
+                Rectangle { height: 1px; background: Theme.filet; }
+            }
+            if Etude.donnees-erreur != "": Text { text: Etude.donnees-erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+            if Etude.attributs.length > 2: Rectangle {
+                height: bloc-2.preferred-height;
+                bloc-2 := VerticalLayout {
+                    spacing: 6px;
+                    Rectangle { height: Theme.e-xs; }
+                    Text { text: "Axes du plan"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    Defileur { etiquette: "x"; options: Etude.attributs; choisi <=> Etude.axe-x; change => { Etude.axes-changes(); } }
+                    Defileur { etiquette: "y"; options: Etude.attributs; choisi <=> Etude.axe-y; change => { Etude.axes-changes(); } }
+                }
+            }
+            Rectangle { height: Theme.e-xs; }
+            Text { text: "Points d’apprentissage"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+            if Etude.jeu < 0: Note { text: Etude.protocole + " (réglé dans Importer)."; font-size: Theme.texte-xs; }
+            if Etude.jeu >= 0: Rectangle {
+                height: grille.preferred-height + 8px;
+                border-radius: Theme.r-md;
+                background: Theme.surface-1;
+                border-width: 1px; border-color: Theme.filet;
+                grille := VerticalLayout {
+                    x: 4px; y: 4px; width: parent.width - 8px;
+                    spacing: 2px;
+                    for ligne in [[0, 1], [2, 3]]: HorizontalLayout {
+                        spacing: 2px;
+                        alignment: start;
+                        for k in ligne: Pilule { texte: Etude.partages[k]; choisie: Etude.partage == k; clic => { Etude.choisir-partage(k); } }
+                    }
+                }
+            }
+            if Etude.jeu >= 0: Note { text: "Graine 42 · mise à l’échelle min-max sur l’apprentissage seul."; font-size: Theme.texte-xs; }
+            HorizontalLayout {
+                alignment: end;
+                padding-top: Theme.e-sm;
+                Bouton { genre: "principal"; texte: "Choisir le modèle"; icone: Icones.fleche; clic => { root.choisir-modele(); } }
+            }
+        }
+    }
+}
+
+// ================================================================ Modele
+export component VueModele inherits Rectangle {
+    callback voir-resultats();
+    gauche := Carte {
+        x: Theme.e-lg; y: Theme.e-lg;
+        width: 330px;
+        height: lg.preferred-height;
+        lg := VerticalLayout {
+            padding: Theme.e-md;
+            spacing: 4px;
+            Titre { text: "Famille d’algorithmes"; corps: Theme.texte-md; }
+            Rectangle { height: Theme.e-xs; }
+            for f[i] in Etude.familles: Rectangle {
+                height: 56px;
+                border-radius: Theme.r-md;
+                background: Etude.famille == i ? Theme.accent-doux : zf.has-hover ? Theme.surface-3 : transparent;
+                accessible-role: radio-button; accessible-label: f.nom; accessible-checked: Etude.famille == i;
+                tuile := Rectangle {
+                    x: Theme.e-sm;
+                    y: (parent.height - self.height) / 2;
+                    width: 40px; height: 40px; border-radius: Theme.r-sm;
+                    background: Etude.famille == i ? Theme.accent : Theme.surface-3;
+                    Icone { width: 22px; height: 22px; trace: Icones.famille(f.court); couleur: Etude.famille == i ? Theme.sur-accent : Theme.encre-2; }
+                }
+                VerticalLayout {
+                    x: tuile.x + tuile.width + Theme.e-sm;
+                    width: parent.width - self.x - Theme.e-sm;
+                    alignment: center;
+                    Text { text: f.nom; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; overflow: elide; }
+                    Note { text: f.court + " · " + f.etat; font-size: Theme.texte-xs; overflow: elide; }
+                }
+                zf := TouchArea { mouse-cursor: pointer; clicked => { Etude.choisir-famille(i); } }
+            }
+        }
+    }
+    Carte {
+        x: gauche.x + gauche.width + Theme.e-lg; y: Theme.e-lg;
+        width: root.width - self.x - Theme.e-lg;
+        height: ld.preferred-height;
+        ld := VerticalLayout {
+            padding: Theme.e-lg;
+            spacing: Theme.e-md;
+            Note { text: "Ce que ce choix change"; font-size: Theme.texte-xs; }
+            Titre { text: Etude.reglage-nom; corps: Theme.texte-xl; }
+            Corps { text: Etude.reglage-aide; }
+            // valeurs du reglage : grille qui passe a la ligne selon la largeur
+            grille-valeurs := Rectangle {
+                property <length> carte-l: 136px;
+                property <length> carte-h: Etude.effets-calcules ? 196px : 92px;
+                property <int> colonnes: max(1, floor((self.width + Theme.e-sm) / (self.carte-l + Theme.e-sm)));
+                height: ceil(Etude.valeurs.length / self.colonnes) * (self.carte-h + Theme.e-sm) - Theme.e-sm;
+                for v[i] in Etude.valeurs: Rectangle {
+                    x: Math.mod(i, grille-valeurs.colonnes) * (grille-valeurs.carte-l + Theme.e-sm);
+                    y: floor(i / grille-valeurs.colonnes) * (grille-valeurs.carte-h + Theme.e-sm);
+                    width: grille-valeurs.carte-l;
+                    height: grille-valeurs.carte-h;
+                    border-radius: Theme.r-md;
+                    background: Etude.valeur == i ? Theme.accent-doux : zv.has-hover ? Theme.surface-3 : Theme.surface-1;
+                    border-width: Etude.valeur == i ? 2px : 1px;
+                    border-color: Etude.valeur == i ? Theme.accent-texte : Theme.filet;
+                    accessible-role: radio-button; accessible-label: v.libelle; accessible-checked: Etude.valeur == i;
+                    vc := VerticalLayout {
+                        padding: Theme.e-sm; spacing: 2px; alignment: center;
+                        if Etude.effets-calcules: Rectangle {
+                            height: 88px;
+                            Rectangle {
+                                width: 88px; height: 88px; border-radius: Theme.r-sm; clip: true;
+                                background: Theme.surface-plot;
+                                Image { width: parent.width; height: parent.height; source: Etude.vignettes[i]; image-fit: fill; }
+                            }
+                        }
+                        Text { text: v.libelle; horizontal-alignment: center; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                        if Etude.effets-calcules: Text { text: Etude.vignettes-scores[i]; horizontal-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.accent-texte; }
+                        if v.detail != "": Note { text: v.detail; horizontal-alignment: center; font-size: Theme.texte-xs; }
+                    }
+                    zv := TouchArea { mouse-cursor: pointer; clicked => { Etude.choisir-valeur(i); } }
+                }
+            }
+            if Etude.effets-calcules: Note { text: "Chaque vignette est une frontière réellement calculée par le moteur sur ce jeu, avec ce partage ; le pourcentage est le score sur le test."; font-size: Theme.texte-xs; }
+            BandeauCalcul { }
+            HorizontalLayout {
+                spacing: Theme.e-sm;
+                Note { horizontal-stretch: 1; text: "Le moteur apprend sur les points d’apprentissage, puis mesure le score sur les points de test."; vertical-alignment: center; }
+                if Etude.valeurs.length > 1: Bouton { actif: !Etude.occupe; texte: "Voir l’effet de chaque valeur"; clic => { Etude.voir-effets(); } }
+                Bouton { genre: "principal"; actif: !Etude.occupe; texte: Etude.occupe ? "Calcul en cours…" : "Entraîner  F4"; clic => { Etude.entrainer(); } }
+            }
+        }
+    }
+}
+
+// ================================================================ Resultats
+export component VueResultats inherits Rectangle {
+    callback aller(string);
+    property <bool> liste-ouverte: false;
+    if !Etude.resultat-present: Carte {
+        x: Theme.e-lg; y: Theme.e-lg;
+        width: min(560px, root.width - 2 * Theme.e-lg);
+        height: v.preferred-height;
+        v := VerticalLayout {
+            padding: Theme.e-lg; spacing: Theme.e-sm;
+            Titre { text: "Pas encore de résultat"; }
+            Corps { text: "Choisissez un modèle et lancez l’entraînement : le moteur calcule la frontière, le score sur le test et la matrice de confusion."; }
+            HorizontalLayout { alignment: start; Bouton { genre: "principal"; icone: Icones.fleche; texte: "Choisir le modèle"; clic => { root.aller("modele"); } } }
+        }
+    }
+    if Etude.resultat-present: Rectangle {
+        // barre : experience courante et suites
+        barre := HorizontalLayout {
+            x: Theme.e-lg; y: Theme.e-lg; width: root.width - 2 * Theme.e-lg; height: 40px;
+            spacing: Theme.e-sm;
+            Note { text: "Expérience"; vertical-alignment: center; font-size: Theme.texte-xs; }
+            choix := Rectangle {
+                width: min(420px, ct.preferred-width + 48px);
+                border-radius: Theme.r-sm;
+                background: zc.has-hover ? Theme.surface-3 : Theme.surface-2;
+                border-width: 1px; border-color: Theme.filet;
+                accessible-role: combobox; accessible-label: "Expérience affichée";
+                ct := Text { x: Theme.e-sm; text: Etude.courante >= 0 ? Etude.titres-experiences[Etude.courante] : ""; overflow: elide; width: parent.width - 40px; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                Path { x: parent.width - 24px; width: 12px; height: 8px; commands: "M1 1l5 5 5-5"; stroke: Theme.encre-2; stroke-width: 1.6px; fill: transparent; viewbox-width: 12; viewbox-height: 8; }
+                zc := TouchArea { mouse-cursor: pointer; clicked => { root.liste-ouverte = !root.liste-ouverte; } }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            Bouton { icone: Icones.retour; texte: "Changer de modèle"; clic => { Etude.changer("modele"); } }
+            Bouton { genre: "fantome"; texte: "Changer de données"; clic => { Etude.changer("donnees"); } }
+        }
+        // plan carre : le domaine du moteur est carre, une spirale doit rester ronde
+        property <length> cote-plan: max(120px, min(root.width - 340px - 3 * Theme.e-lg, root.height - (barre.y + barre.height + Theme.e-md) - Theme.e-lg));
+        if Etude.vue-3d: Cadre3D {
+            x: plan.x; y: plan.y; width: plan.width; height: plan.height;
+        }
+        plan := CadrePlan {
+            visible: !Etude.vue-3d;
+            x: Theme.e-lg + (root.width - 340px - 3 * Theme.e-lg - self.width) / 2; y: barre.y + barre.height + Theme.e-md;
+            width: parent.cote-plan;
+            height: parent.cote-plan;
+            source: Etude.plan;
+            legende: Etude.plan-legende;
+            taille(l, h) => { Etude.taille-plan(l, h); }
+        }
+        Defilement {
+            x: root.width - 340px - Theme.e-lg; y: barre.y + barre.height + Theme.e-md;
+            width: 340px; height: root.height - self.y - Theme.e-lg;
+            content-width: self.width;
+            content-height: cote.preferred-height;
+            cote := VerticalLayout {
+                spacing: Theme.e-lg;
+                alignment: start;
+                BandeauCalcul { }
+                if Etude.direct-valeurs.length > 1: Carte {
+                    height: cd.preferred-height;
+                    cd := VerticalLayout {
+                        padding: Theme.e-lg; spacing: 6px;
+                        HorizontalLayout {
+                            Titre { text: "Réglage en direct"; corps: Theme.texte-md; }
+                            Badge { texte: "F4"; }
+                        }
+                        Note { text: Etude.direct-nom + " : chaque changement relance le moteur sur le même protocole et remplace cette expérience."; font-size: Theme.texte-xs; }
+                        Defileur {
+                            etiquette: Etude.direct-nom;
+                            options: Etude.direct-valeurs;
+                            choisi <=> Etude.direct-valeur;
+                            change(i) => { if (!Etude.occupe) { Etude.regler-en-direct(i); } }
+                        }
+                    }
+                }
+                Carte {
+                    height: cs.preferred-height;
+                    cs := VerticalLayout {
+                        padding: Theme.e-lg; spacing: 4px;
+                        Note { text: "Score sur le test"; font-size: Theme.texte-xs; }
+                        Text { text: Etude.score; font-family: Theme.police-titre; font-size: Theme.texte-2xl; font-weight: 500; color: Theme.encre; }
+                        Note { text: Etude.score-detail; font-size: Theme.texte-xs; }
+                    }
+                }
+                Carte {
+                    height: cc.preferred-height;
+                    cc := VerticalLayout {
+                        padding: Theme.e-lg; spacing: Theme.e-sm;
+                        Titre { text: "Où se trompe-t-il ?"; corps: Theme.texte-md; }
+                        Note { text: "Lignes : classe réelle · colonnes : classe prédite (points de test). Cliquez une case pour voir ces points sur le plan."; font-size: Theme.texte-xs; }
+                        property <length> case: (340px - 2 * Theme.e-lg - 64px - Etude.confusion-classes.length * 4px) / max(1, Etude.confusion-classes.length);
+                        HorizontalLayout {
+                            spacing: 4px;
+                            Rectangle { width: 64px; }
+                            for c in Etude.confusion-classes: Note { width: cc.case; text: c; horizontal-alignment: center; font-size: Theme.texte-xs; overflow: elide; }
+                        }
+                        for l[r] in Etude.confusion: HorizontalLayout {
+                            spacing: 4px; height: 34px;
+                            Note { width: 64px; text: "réel " + l.reel; vertical-alignment: center; font-size: Theme.texte-xs; overflow: elide; }
+                            for v[p] in l.cellules: Rectangle {
+                                width: cc.case;
+                                border-radius: 6px;
+                                property <bool> choisie: Etude.cellule-reel == r && Etude.cellule-predit == p;
+                                background: r == p ? Theme.succes-doux : v > 0 ? Theme.alerte-doux : Theme.surface-1;
+                                border-width: self.choisie ? 2px : 0px;
+                                border-color: Theme.focus;
+                                accessible-role: button;
+                                accessible-label: "réel " + l.reel + ", prédit " + Etude.confusion-classes[p] + " : " + v;
+                                Text { text: v; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: r == p ? Theme.succes : v > 0 ? Theme.alerte : Theme.encre-3; }
+                                TouchArea {
+                                    mouse-cursor: pointer;
+                                    clicked => {
+                                        if (parent.choisie) { Etude.cellule-reel = -1; Etude.cellule-predit = -1; }
+                                        else { Etude.cellule-reel = r; Etude.cellule-predit = p; Etude.interieur = false; }
+                                        Etude.vue-plan-changee();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if Etude.interieur: Carte {
+                    height: ci.preferred-height;
+                    ci := VerticalLayout {
+                        padding: Theme.e-lg; spacing: 6px;
+                        Titre { text: "Intérieur"; corps: Theme.texte-md; }
+                        Corps { text: Etude.interieur-texte; font-size: Theme.texte-sm; }
+                    }
+                }
+                Carte {
+                    height: cf.preferred-height;
+                    cf := VerticalLayout {
+                        padding: Theme.e-lg; spacing: 6px;
+                        Titre { text: "Confiance"; corps: Theme.texte-md; }
+                        Corps { text: Etude.confiance; font-size: Theme.texte-sm; }
+                        if Etude.temps-decision != "": Note { text: Etude.temps-decision; font-size: Theme.texte-xs; }
+                    }
+                }
+            }
+        }
+        // Plan 2D / Volume 3D, en haut a gauche du plan ; Frontieres / Donnees seules en 3D
+        if Etude.vue-3d-possible: Rectangle {
+            x: plan.x + Theme.e-sm; y: plan.y + Theme.e-sm;
+            width: 220px; height: 36px;
+            Pilules {
+                width: parent.width;
+                options: ["Plan 2D", "Volume 3D"];
+                choisi: Etude.vue-3d ? 1 : 0;
+                change(i) => { Etude.vue-3d = i == 1; Etude.mode-3d-change(); }
+            }
+        }
+        if Etude.vue-3d: Rectangle {
+            x: plan.x + plan.width - self.width - Theme.e-sm; y: plan.y + Theme.e-sm;
+            width: 240px; height: 36px;
+            Pilules {
+                width: parent.width;
+                options: ["Frontières", "Données seules"];
+                choisi: Etude.donnees-seules ? 1 : 0;
+                change(i) => { Etude.donnees-seules = i == 1; Etude.mode-3d-change(); }
+            }
+        }
+        // Frontiere / Interieur, en haut a droite du plan : seulement si le moteur publie un interieur
+        // (vecteurs de support du SVM, gaussiennes de Bayes) ; ailleurs le bouton n'aurait rien a montrer
+        if !Etude.vue-3d && Etude.interieur-possible: Rectangle {
+            x: plan.x + plan.width - self.width - Theme.e-sm; y: plan.y + Theme.e-sm;
+            width: 220px; height: 36px;
+            Pilules {
+                width: parent.width;
+                options: ["Frontière", "Intérieur"];
+                choisi: Etude.interieur ? 1 : 0;
+                change(i) => {
+                    if (i == 1 && !Etude.interieur-possible) { self.choisi = 0; return; }
+                    Etude.interieur = i == 1; Etude.cellule-reel = -1; Etude.cellule-predit = -1; Etude.vue-plan-changee();
+                }
+            }
+        }
+        if root.liste-ouverte: TouchArea { clicked => { root.liste-ouverte = false; } }
+        if root.liste-ouverte: Rectangle {
+            x: choix.x + barre.x; y: barre.y + barre.height + 4px;
+            width: max(choix.width, 280px); height: lx.preferred-height + 12px;
+            background: Theme.surface-2; border-width: 1px; border-color: Theme.filet-fort; border-radius: Theme.r-md;
+            drop-shadow-blur: 24px; drop-shadow-offset-y: 8px; drop-shadow-color: Theme.ombre;
+            lx := VerticalLayout {
+                x: 6px; y: 6px; width: parent.width - 12px;
+                for t[k] in Etude.titres-experiences: Rectangle {
+                    height: 34px; border-radius: Theme.r-sm;
+                    background: zl.has-hover ? Theme.surface-3 : transparent;
+                    Text { x: 10px; width: parent.width - 20px; text: t; overflow: elide; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: k == Etude.courante ? 600 : 400; color: Theme.encre; }
+                    zl := TouchArea { clicked => { root.liste-ouverte = false; Etude.choisir-experience(k); } }
+                }
+            }
+        }
+    }
+}

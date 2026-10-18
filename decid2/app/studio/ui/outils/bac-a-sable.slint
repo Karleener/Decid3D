@@ -1,0 +1,175 @@
+// Outil « Bac a sable » : on pose des points a la souris, le moteur reapprend
+// 400 ms apres le dernier clic et colore les regions. Le C++ (studio/src/outils/BacASable.cpp) tient l'etat.
+import { Theme } from "../theme.slint";
+import { Icone, Icones } from "../icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Champ, Pilules, Defilement } from "../composants.slint";
+
+export struct ParametreSaisi { cle: string, libelle: string, valeur: string }
+
+export global BacASable {
+    in property <image> plan;
+    in property <int> nb-points;
+    in property <[int]> comptes: [0, 0, 0];
+    in-out property <bool> trois-classes: false;
+    in property <string> etat: "vide";          // vide | attente | calcul | ajour | erreur
+    in property <string> aide;
+    in property <[string]> familles: ["k-PPV", "SVM", "Forêt", "Bayes"];
+    in-out property <int> famille: 0;
+    in property <[ParametreSaisi]> parametres;
+    in property <string> erreur;
+    in property <bool> image-presente;
+    in property <string> legende;              // definition du score, ou sa raison d'absence
+    in property <bool> score-defini;
+    in property <string> faits;                // « Points appris : … » ligne par ligne
+    callback poser(float, float, int, bool);    // x, y dans [0, 1] (y vers le haut), bouton (0 gauche, 2 droit), Maj
+    callback exemple();
+    callback annuler();
+    callback effacer();
+    callback changer-famille(int);
+    callback changer-parametre(int, string);
+    callback changer-trois-classes(bool);
+    callback taille(length, length);
+}
+
+export component OutilBacASable inherits Rectangle {
+    property <bool> etroit: root.width < 1100px;
+    property <length> col-d: 340px;
+
+    cadre := Rectangle {
+        x: 0; y: 0;
+        width: root.etroit ? root.width : root.width - root.col-d - Theme.e-lg;
+        height: root.etroit ? max(480px, root.height * 0.6) : root.height;
+        background: Theme.surface-plot;
+        border-width: 1px; border-color: Theme.filet; border-radius: Theme.r-lg;
+        clip: true;
+        changed width => { BacASable.taille(self.width, self.height); }
+        changed height => { BacASable.taille(self.width, self.height); }
+        init => { BacASable.taille(self.width, self.height); }
+        Image { width: parent.width; height: parent.height; source: BacASable.plan; image-fit: fill; }
+        zone := TouchArea {
+            mouse-cursor: crosshair;
+            pointer-event(ev) => {
+                if (ev.kind == PointerEventKind.down && (ev.button == PointerEventButton.left || ev.button == PointerEventButton.right)) {
+                    BacASable.poser(self.mouse-x / self.width, 1 - self.mouse-y / self.height, ev.button == PointerEventButton.right ? 2 : 0, ev.modifiers.shift);
+                }
+            }
+        }
+        Text {
+            x: Theme.e-sm; y: parent.height - self.height - Theme.e-sm;
+            text: BacASable.aide;
+            font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+        }
+        // invitation, plan vide : les clics la traversent, sauf sur le bouton
+        if BacASable.nb-points == 0: Rectangle {
+            width: min(420px, parent.width - 2 * Theme.e-lg);
+            height: inv.preferred-height;
+            background: Theme.surface-1;
+            border-width: 1px; border-color: Theme.filet-fort; border-radius: Theme.r-lg;
+            inv := VerticalLayout {
+                padding: Theme.e-lg; spacing: Theme.e-sm; alignment: center;
+                Titre { text: "Dessinez deux nuages de points"; horizontal-alignment: center; }
+                HorizontalLayout {
+                    alignment: center; spacing: 6px;
+                    Rectangle { y: (parent.height - self.height) / 2; width: 10px; height: 10px; border-radius: 5px; background: Theme.classe-0; }
+                    Note { text: "Clic gauche : classe 0"; vertical-alignment: center; font-size: Theme.texte-sm; }
+                    Rectangle { width: Theme.e-sm; }
+                    Rectangle { y: (parent.height - self.height) / 2; width: 10px; height: 10px; border-radius: 5px; background: Theme.classe-1; }
+                    Note { text: "Clic droit : classe 1"; vertical-alignment: center; font-size: Theme.texte-sm; }
+                }
+                Note { text: "Dès deux classes, le moteur apprend et colore les régions."; horizontal-alignment: center; font-size: Theme.texte-xs; }
+                HorizontalLayout { alignment: center; Bouton { texte: "Commencer avec un exemple"; clic => { BacASable.exemple(); } } }
+            }
+        }
+    }
+
+    Defilement {
+        x: root.etroit ? 0 : cadre.width + Theme.e-lg;
+        y: root.etroit ? cadre.height + Theme.e-lg : 0;
+        width: root.etroit ? root.width : root.col-d;
+        height: root.etroit ? root.height - self.y : root.height;
+        content-height: panneau.preferred-height;
+        panneau := VerticalLayout {
+            spacing: Theme.e-lg;
+            alignment: start;
+            // ---- poser des points
+            Carte {
+                height: c1.preferred-height;
+                c1 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: "Poser des points"; corps: Theme.texte-md; }
+                        Badge {
+                            texte: BacASable.etat == "vide" ? "en attente" : BacASable.etat == "attente" ? "modifié…" : BacASable.etat == "calcul" ? "calcul…" : BacASable.etat == "ajour" ? "à jour" : "refusé";
+                            genre: BacASable.etat == "ajour" ? "succes" : BacASable.etat == "erreur" ? "alerte" : "neutre";
+                        }
+                    }
+                    for l[i] in [
+                        { texte: "Clic gauche : classe 0", couleur: Theme.classe-0 },
+                        { texte: "Clic droit : classe 1", couleur: Theme.classe-1 },
+                        { texte: "Maj + clic : classe 2", couleur: Theme.classe-2 },
+                    ]: HorizontalLayout {
+                        visible: i < 2 || BacASable.trois-classes;
+                        height: self.visible ? 26px : 0px;
+                        spacing: Theme.e-sm;
+                        Rectangle { y: (parent.height - self.height) / 2; width: 10px; height: 10px; border-radius: 5px; background: l.couleur; }
+                        Corps { horizontal-stretch: 1; text: l.texte; vertical-alignment: center; font-size: Theme.texte-sm; }
+                        Text { text: BacASable.comptes[i]; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    }
+                    HorizontalLayout {
+                        spacing: Theme.e-xs; height: 28px;
+                        Rectangle {
+                            y: (parent.height - self.height) / 2;
+                            width: 18px; height: 18px; border-radius: 4px; border-width: 2px;
+                            border-color: BacASable.trois-classes ? Theme.accent-texte : Theme.filet-fort;
+                            background: BacASable.trois-classes ? Theme.accent : transparent;
+                            accessible-role: checkbox; accessible-label: "Ajouter une 3e classe"; accessible-checked: BacASable.trois-classes;
+                            TouchArea { clicked => { BacASable.changer-trois-classes(!BacASable.trois-classes); } }
+                        }
+                        Corps { text: "Ajouter une 3e classe"; vertical-alignment: center; font-size: Theme.texte-sm; }
+                    }
+                    HorizontalLayout {
+                        spacing: Theme.e-sm; alignment: start;
+                        Bouton { actif: BacASable.nb-points > 0; icone: Icones.retour; texte: "Annuler le dernier point"; clic => { BacASable.annuler(); } }
+                        Bouton { genre: "fantome"; actif: BacASable.nb-points > 0; texte: "Effacer"; clic => { BacASable.effacer(); } }
+                    }
+                }
+            }
+            // ---- algorithme
+            Carte {
+                height: c2.preferred-height;
+                c2 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Algorithme"; corps: Theme.texte-md; }
+                    Pilules { options: BacASable.familles; choisi: BacASable.famille; change(i) => { BacASable.changer-famille(i); } }
+                    if BacASable.parametres.length == 0: Note { text: "Pas de réglage : chaque classe est modélisée par une loi normale."; font-size: Theme.texte-xs; }
+                    for p[i] in BacASable.parametres: VerticalLayout {
+                        spacing: 4px;
+                        Note { text: p.libelle; font-size: Theme.texte-xs; }
+                        Champ { texte: p.valeur; info: p.libelle; genre: decimal; valide(t) => { BacASable.changer-parametre(i, t); } }
+                    }
+                    if BacASable.parametres.length > 0: Note { text: "Entrée valide la valeur ; le moteur réapprend aussitôt."; font-size: Theme.texte-xs; }
+                }
+            }
+            // ---- ce que montre le moteur
+            Carte {
+                height: c3.preferred-height;
+                c3 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Ce que montre le moteur"; corps: Theme.texte-md; }
+                    if BacASable.erreur != "": Text { text: BacASable.erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+                    if BacASable.erreur == "" && !BacASable.image-presente: Note { text: "Posez au moins un point de deux classes différentes. Le moteur réapprend 400 ms après votre dernier clic, sur tous les points."; }
+                    if BacASable.erreur == "" && BacASable.image-presente: Rectangle {
+                        height: bloc-0.preferred-height;
+                        bloc-0 := VerticalLayout {
+                            spacing: 6px;
+                            if BacASable.score-defini: Corps { text: "Teinte soutenue : décision franche · pâle : près de la frontière."; font-size: Theme.texte-sm; }
+                            Note { text: BacASable.legende; font-size: Theme.texte-xs; }
+                            Corps { text: BacASable.faits; font-size: Theme.texte-sm; color: Theme.encre; }
+                            Note { text: "Apprentissage sur tous les points posés : il n’y a pas de jeu de test, donc pas de score ici."; font-size: Theme.texte-xs; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

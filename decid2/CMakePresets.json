@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "windows",
+      "displayName": "Windows x64 (Visual Studio 2022)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "OpenCV_DIR": "D:/opencv/build"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "release", "displayName": "Release", "configurePreset": "windows", "configuration": "Release" },
+    { "name": "debug", "displayName": "Debug", "configurePreset": "windows", "configuration": "Debug" }
+  ],
+  "testPresets": [
+    { "name": "tests", "displayName": "Tests (Release)", "configurePreset": "windows", "configuration": "Release", "output": { "outputOnFailure": true } }
+  ]
+}

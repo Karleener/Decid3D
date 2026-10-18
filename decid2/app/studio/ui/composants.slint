@@ -1,0 +1,411 @@
+// Composants communs, dessines avec les jetons de Theme (aucun widget std-widgets).
+import { Theme, CadreFenetre } from "theme.slint";
+import { Icone, Icones } from "icones.slint";
+
+// Logo d'origine (bleu nuit + Oxide Crimson) toujours pose sur sa tuile ivoire, suivi du mot « Decid »
+export component Signature inherits HorizontalLayout {
+    in property <length> tuile: 34px;
+    in property <length> corps: 22px;
+    in property <color> couleur: Theme.encre;
+    spacing: 10px;
+    alignment: start;
+    Rectangle {
+        width: root.tuile;
+        height: root.tuile;
+        y: (parent.height - self.height) / 2;
+        border-radius: root.tuile * 0.23;
+        background: Theme.linen;
+        border-width: 1px;
+        border-color: Theme.logo-bord;
+        Image {
+            width: parent.width * 0.72;
+            height: parent.height * 0.72;
+            source: @image-url("marque/decid-symbole-couleur.svg");
+        }
+    }
+    Text {
+        text: "Decid";
+        vertical-alignment: center;
+        font-family: Theme.police-texte;
+        font-weight: 600;
+        font-size: root.corps;
+        letter-spacing: Theme.facile ? Theme.interlettre : -0.035 * root.corps;
+        color: root.couleur;
+    }
+}
+
+// Bouton rond a icone (38 px), avec etat « enfonce » pour les bascules
+export component BoutonIcone inherits Rectangle {
+    in property <string> trace;
+    in property <string> info;
+    in property <bool> enfonce: false;
+    in property <color> encre: Theme.encre-2;
+    in property <color> encre-active: Theme.encre;
+    in property <color> voile: Theme.surface-3;
+    in property <color> voile-fort: Theme.surface-3;
+    callback clic();
+    width: 38px;
+    height: 38px;
+    border-radius: self.height / 2;
+    background: enfonce ? voile-fort : zone.has-hover ? voile : transparent;
+    animate background { duration: Theme.duree-courte; }
+    accessible-role: button;
+    accessible-label: info;
+    accessible-checked: enfonce;
+    Icone {
+        trace: root.trace;
+        couleur: root.enfonce || zone.has-hover ? root.encre-active : root.encre;
+    }
+    zone := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clic(); }
+    }
+    focus := FocusScope {
+        key-pressed(e) => {
+            if (e.text == " " || e.text == "\n") { root.clic(); return accept; }
+            reject
+        }
+    }
+    Rectangle {
+        border-radius: parent.border-radius;
+        border-width: focus.has-focus ? 2px : 0px;
+        border-color: Theme.focus;
+    }
+}
+
+// Bascules d'accessibilite : lecture facilitee et theme (sur l'accueil et dans la barre)
+export component Bascules inherits HorizontalLayout {
+    in property <color> encre: Theme.encre-2;
+    in property <color> encre-active: Theme.encre;
+    in property <color> voile: Theme.surface-3;
+    in property <color> voile-fort: Theme.surface-3;
+    callback preferences-changees();
+    spacing: Theme.e-2xs;
+    BoutonIcone {
+        trace: Icones.lecture;
+        info: "Lecture facilitée (dyslexie)";
+        enfonce: Theme.facile;
+        encre: root.encre; encre-active: root.encre-active; voile: root.voile; voile-fort: root.voile-fort;
+        clic => { Theme.facile = !Theme.facile; root.preferences-changees(); }
+    }
+    BoutonIcone {
+        trace: Theme.sombre ? Icones.soleil : Icones.lune;
+        info: Theme.sombre ? "Passer au thème clair" : "Passer au thème sombre";
+        encre: root.encre; encre-active: root.encre-active; voile: root.voile; voile-fort: root.voile-fort;
+        clic => { Theme.sombre = !Theme.sombre; root.preferences-changees(); }
+    }
+}
+
+// ---------- Textes (une seule source pour la typographie) ----------
+export component Titre inherits Text {
+    in property <length> corps: Theme.texte-lg;
+    font-family: Theme.police-titre;
+    font-size: corps;
+    font-weight: 500;
+    letter-spacing: Theme.facile ? Theme.interlettre : -0.01 * corps;
+    color: Theme.encre;
+    wrap: word-wrap;
+}
+export component Corps inherits Text {
+    font-family: Theme.police-texte;
+    font-size: Theme.texte-corps;
+    letter-spacing: Theme.interlettre;
+    color: Theme.encre-2;
+    wrap: word-wrap;
+}
+export component Note inherits Text {
+    font-family: Theme.police-texte;
+    font-size: Theme.texte-sm;
+    letter-spacing: Theme.interlettre;
+    color: Theme.encre-3;
+    wrap: word-wrap;
+}
+
+// ---------- Bouton : normal, principal (accent) ou fantome ----------
+export component Bouton inherits Rectangle {
+    in property <string> texte;
+    in property <string> icone;
+    in property <string> genre: "normal";   // normal | principal | fantome
+    in property <bool> actif: true;
+    callback clic();
+    height: 38px;
+    width: rangee.preferred-width;
+    border-radius: self.height / 2;
+    opacity: actif ? 1 : 0.45;
+    background: genre == "principal" ? (zone.has-hover && actif ? Theme.accent-survol : Theme.accent)
+        : genre == "fantome" ? (zone.has-hover && actif ? Theme.surface-3 : transparent)
+        : (zone.has-hover && actif ? Theme.filet-fort : Theme.surface-3);
+    animate background { duration: Theme.duree-courte; }
+    accessible-role: button;
+    accessible-label: texte;
+    accessible-enabled: actif;
+    property <color> encre: genre == "principal" ? Theme.sur-accent : genre == "fantome" && !zone.has-hover ? Theme.encre-2 : Theme.encre;
+    rangee := HorizontalLayout {
+        padding-left: Theme.e-md;
+        padding-right: Theme.e-md;
+        spacing: Theme.e-xs;
+        if root.icone != "": Icone { y: (parent.height - self.height) / 2; width: 18px; height: 18px; trace: root.icone; couleur: root.encre; }
+        Text {
+            text: root.texte;
+            vertical-alignment: center;
+            font-family: Theme.police-texte;
+            font-size: Theme.texte-sm;
+            font-weight: 600;
+            letter-spacing: Theme.interlettre;
+            color: root.encre;
+        }
+    }
+    zone := TouchArea {
+        enabled: root.actif;
+        mouse-cursor: root.actif ? pointer : default;
+        clicked => { root.clic(); }
+    }
+}
+
+// ---------- Carte ----------
+export component Carte inherits Rectangle {
+    background: Theme.surface-2;
+    border-width: 1px;
+    border-color: Theme.filet;
+    border-radius: Theme.r-lg;
+}
+
+// ---------- Badge : neutre, succes, alerte, accent ----------
+export component Badge inherits Rectangle {
+    in property <string> texte;
+    in property <string> genre: "neutre";
+    height: 22px;
+    width: libelle.preferred-width + 20px;
+    border-radius: self.height / 2;
+    background: genre == "succes" ? Theme.succes-doux : genre == "alerte" ? Theme.alerte-doux : genre == "accent" ? Theme.accent-doux : Theme.surface-3;
+    libelle := Text {
+        text: root.texte;
+        font-family: Theme.police-texte;
+        font-size: Theme.texte-xs;
+        font-weight: 600;
+        letter-spacing: Theme.interlettre;
+        color: root.genre == "succes" ? Theme.succes : root.genre == "alerte" ? Theme.alerte : root.genre == "accent" ? Theme.accent-texte : Theme.encre-2;
+    }
+}
+
+// ---------- Champ de saisie (TextInput nu, dessine avec les jetons) ----------
+export component Champ inherits Rectangle {
+    in-out property <string> texte;
+    in property <string> info;
+    in property <InputType> genre: text;
+    callback valide(string);
+    height: 36px;
+    border-radius: Theme.r-sm;
+    background: Theme.surface-3;
+    border-width: saisie.has-focus ? 2px : 1px;
+    border-color: saisie.has-focus ? Theme.focus : Theme.filet;
+    accessible-role: text-input;
+    accessible-label: info;
+    saisie := TextInput {
+        x: Theme.e-sm; width: parent.width - 2 * Theme.e-sm;
+        text <=> root.texte;
+        input-type: root.genre;
+        vertical-alignment: center;
+        single-line: true;
+        font-family: Theme.police-texte;
+        font-size: Theme.texte-sm;
+        color: Theme.encre;
+        selection-background-color: Theme.accent-doux;
+        selection-foreground-color: Theme.encre;
+        accepted => { root.valide(self.text); }
+        edited => { }
+    }
+}
+
+// ---------- Choix exclusif en pilules ----------
+export component Pilules inherits Rectangle {
+    in property <[string]> options;
+    in-out property <int> choisi;
+    callback change(int);
+    height: rangee.preferred-height + 8px;
+    border-radius: Theme.r-md;
+    background: Theme.surface-1;
+    border-width: 1px;
+    border-color: Theme.filet;
+    rangee := HorizontalLayout {
+        x: 4px; y: 4px; width: parent.width - 8px;
+        spacing: 2px;
+        for o[i] in root.options: Rectangle {
+            horizontal-stretch: 1;
+            height: 28px;
+            border-radius: 14px;
+            background: root.choisi == i ? Theme.surface-3 : z.has-hover ? Theme.surface-2 : transparent;
+            accessible-role: radio-button; accessible-label: o; accessible-checked: root.choisi == i;
+            Text { text: o; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: root.choisi == i ? Theme.encre : Theme.encre-2; overflow: elide; }
+            z := TouchArea { mouse-cursor: pointer; clicked => { root.choisi = i; root.change(i); } }
+        }
+    }
+}
+
+// ---------- Selecteur pas a pas (attribut d'un axe) ----------
+export component Defileur inherits Rectangle {
+    in property <string> etiquette;
+    in property <[string]> options;
+    in-out property <int> choisi;
+    callback change(int);
+    height: 36px;
+    border-radius: Theme.r-sm;
+    background: Theme.surface-3;
+    border-width: 1px; border-color: Theme.filet;
+    accessible-role: spinbox; accessible-label: etiquette;
+    HorizontalLayout {
+        padding-left: Theme.e-sm; spacing: Theme.e-xs;
+        Text { text: root.etiquette; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3; }
+        Text { horizontal-stretch: 1; text: root.options.length > 0 ? root.options[root.choisi] : "—"; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; overflow: elide; }
+        for sens[k] in [-1, 1]: Rectangle {
+            width: 32px;
+            background: z.has-hover ? Theme.filet-fort : transparent;
+            Path { width: 10px; height: 10px; viewbox-width: 10; viewbox-height: 10; commands: k == 0 ? "M7 1 3 5l4 4" : "M3 1l4 4-4 4"; stroke: Theme.encre-2; stroke-width: 1.6px; fill: transparent; }
+            z := TouchArea {
+                mouse-cursor: pointer;
+                clicked => {
+                    if (root.options.length > 0) {
+                        root.choisi = Math.mod(root.choisi + sens + root.options.length, root.options.length);
+                        root.change(root.choisi);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------- Boutons de la fenetre (la barre de menus remplace la barre de titre Windows) ----------
+component BoutonFenetre inherits Rectangle {
+    in property <string> trace;       // commandes SVG dans une boite de 10 x 10
+    in property <string> info;
+    in property <bool> fermer;
+    in property <color> encre;
+    in property <color> voile;
+    callback clic();
+    width: 46px;
+    background: zone.pressed ? (root.fermer ? CadreFenetre.fermer-appui : root.voile)
+              : zone.has-hover ? (root.fermer ? CadreFenetre.fermer-survol : root.voile) : transparent;
+    accessible-role: button;
+    accessible-label: root.info;
+    Path {
+        width: 10px; height: 10px;
+        viewbox-width: 10; viewbox-height: 10;
+        commands: root.trace;
+        fill: transparent;
+        stroke: root.fermer && zone.has-hover ? CadreFenetre.fermer-encre : root.encre;
+        stroke-width: 1px;
+    }
+    zone := TouchArea { clicked => { root.clic(); } }
+}
+
+export component CommandesFenetre inherits HorizontalLayout {
+    in property <color> encre: Theme.encre-2;
+    in property <color> voile: Theme.surface-3;
+    width: CadreFenetre.largeur-commandes;
+    height: CadreFenetre.hauteur;
+    BoutonFenetre { trace: "M 0 5 L 10 5"; info: "Réduire"; encre: root.encre; voile: root.voile; clic => { CadreFenetre.commande("reduire"); } }
+    BoutonFenetre {
+        trace: CadreFenetre.agrandie ? "M 2.5 0.5 L 9.5 0.5 L 9.5 7.5 M 0.5 2.5 L 7.5 2.5 L 7.5 9.5 L 0.5 9.5 Z" : "M 0.5 0.5 L 9.5 0.5 L 9.5 9.5 L 0.5 9.5 Z";
+        info: CadreFenetre.agrandie ? "Restaurer" : "Agrandir";
+        encre: root.encre; voile: root.voile;
+        clic => { CadreFenetre.commande("agrandir"); }
+    }
+    BoutonFenetre { trace: "M 0 0 L 10 10 M 10 0 L 0 10"; info: "Fermer"; fermer: true; encre: root.encre; voile: root.voile; clic => { CadreFenetre.commande("fermer"); } }
+}
+
+// ---------- Zone qui defile : rail fin dans la marge, fleches haut et bas, fondu au bord quand il reste du contenu ----------
+component FlecheDefilement inherits Rectangle {
+    in property <bool> haut;
+    in property <bool> actif;
+    callback pas();
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background: zone.pressed && root.actif ? Theme.surface-3 : zone.has-hover && root.actif ? Theme.surface-2 : transparent;
+    opacity: root.actif ? 1 : 0.35;
+    accessible-role: button;
+    accessible-label: root.haut ? "Défiler vers le haut" : "Défiler vers le bas";
+    Path {
+        width: 8px; height: 5px;
+        viewbox-width: 8; viewbox-height: 5;
+        commands: root.haut ? "M1 4l3-3 3 3" : "M1 1l3 3 3-3";
+        fill: transparent;
+        stroke: zone.has-hover && root.actif ? Theme.encre : Theme.encre-3;
+        stroke-width: 1.4px;
+        stroke-line-cap: round;
+    }
+    zone := TouchArea { mouse-cursor: root.actif ? pointer : default; clicked => { if (root.actif) { root.pas(); } } }
+}
+
+export component Defilement inherits Rectangle {
+    in property <length> content-height;
+    in property <length> content-width;      // le contenu prend toujours la largeur utile de la zone
+    in property <color> fond: Theme.surface-0; // couleur sous la zone (pour le fondu des bords)
+    property <length> exces: max(0px, root.content-height - root.height);
+    property <bool> utile: root.exces > 1px;
+    // le rail se loge dans la marge a droite de la zone (espace entre colonnes) : il ne recouvre ni ne retrecit le contenu
+    function aller(dy: length) { f.content-y = clamp(f.content-y + dy, -root.exces, 0px); }
+    f := Flickable {
+        width: root.width;
+        height: root.height;
+        content-width: self.width;
+        content-height: root.content-height;
+        @children
+    }
+    // fondus : il reste du contenu au-dessus / en dessous
+    if root.utile && f.content-y < -1px: Rectangle {
+        y: 0; height: 20px; width: root.width;
+        background: @linear-gradient(180deg, root.fond 0%, root.fond.transparentize(100%) 100%);
+    }
+    if root.utile && f.content-y > -root.exces + 1px: Rectangle {
+        y: root.height - self.height; height: 28px; width: root.width;
+        background: @linear-gradient(0deg, root.fond 0%, root.fond.transparentize(100%) 100%);
+    }
+    if root.utile: barre := Rectangle {
+        x: root.width + 3px;
+        width: 16px;
+        y: 0;
+        height: root.height;
+        property <length> piste-y: 20px;
+        property <length> piste-h: self.height - 40px;
+        property <length> poignee-h: max(28px, self.piste-h * root.height / root.content-height);
+        property <length> course: self.piste-h - self.poignee-h;
+        property <length> depart-y;
+        property <length> depart-c;
+        FlecheDefilement { y: 0; haut: true; actif: f.content-y < -1px; pas => { root.aller(80px); } }
+        // piste et poignee (glisser la poignee ; cliquer la piste avance d'une page)
+        Rectangle {
+            y: parent.piste-y; height: parent.piste-h;
+            width: 2px; x: (parent.width - self.width) / 2;
+            border-radius: 1px;
+            background: Theme.filet;
+        }
+        piste := TouchArea {
+            y: parent.piste-y; height: parent.piste-h;
+            clicked => {
+                if (self.mouse-y < parent.course * (-f.content-y / root.exces)) { root.aller(root.height - 40px); }
+                else if (self.mouse-y > parent.course * (-f.content-y / root.exces) + parent.poignee-h) { root.aller(-(root.height - 40px)); }
+            }
+        }
+        Rectangle {
+            y: parent.piste-y + parent.course * (-f.content-y / root.exces);
+            height: parent.poignee-h;
+            width: zone.has-hover || zone.pressed ? 8px : 6px;
+            x: (parent.width - self.width) / 2;
+            border-radius: self.width / 2;
+            background: zone.pressed ? Theme.encre-2 : zone.has-hover ? Theme.encre-3 : Theme.filet-fort;
+            animate width { duration: 120ms; }
+            zone := TouchArea {
+                pointer-event(e) => {
+                    if (e.kind == PointerEventKind.down) { barre.depart-y = self.absolute-position.y + self.mouse-y; barre.depart-c = f.content-y; }
+                }
+                moved => {
+                    if (self.pressed && barre.course > 0px) {
+                        f.content-y = clamp(barre.depart-c - (self.absolute-position.y + self.mouse-y - barre.depart-y) * root.exces / barre.course, -root.exces, 0px);
+                    }
+                }
+            }
+        }
+        FlecheDefilement { y: parent.height - self.height; haut: false; actif: f.content-y > -root.exces + 1px; pas => { root.aller(-80px); } }
+    }
+}

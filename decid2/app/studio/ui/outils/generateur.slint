@@ -1,0 +1,175 @@
+// Outil « Generer » : gaussiennes 2D tracees a la souris, gaussiennes 3D, spirales 3D.
+// Le tirage est fait par le moteur (operation generer, generateur portable) ; le C++ relit generation.csv.
+import { Theme } from "../theme.slint";
+import { Icone, Icones } from "../icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Champ, Pilules, BoutonIcone, Defilement } from "../composants.slint";
+import { ParametreSaisi } from "bac-a-sable.slint";
+import { Fait } from "../etude.slint";
+
+export struct ClasseGen { nom: string, champs: [ParametreSaisi] }
+
+export global Generateur {
+    in-out property <int> mode: 0;               // 0 gaussiennes 2D, 1 gaussiennes 3D, 2 spirales 3D
+    in property <[ClasseGen]> classes;
+    in-out property <int> selection: 0;
+    in-out property <string> graine: "7";
+    in-out property <bool> bornes: true;
+    in-out property <int> axe: 0;                // spirales : 0 commun (z), 1 tire pour chaque spirale
+    in property <bool> calcul;
+    in property <string> erreur;
+    in property <image> vue;
+    in property <string> legende;
+    in property <bool> resultat;
+    in property <[Fait]> faits;
+    in property <string> relu;
+    callback choisir-mode(int);
+    callback changer-nom(int, string);
+    callback changer-champ(int, int, string);
+    callback supprimer(int);
+    callback ajouter();
+    callback generer();
+    callback enregistrer();
+    callback etudier();
+    callback souris(int, float, float);          // 0 appui, 1 deplacement, 2 relachement ; x, y dans [0, 1]
+    callback tourner(length, length);
+    callback zoomer(float);
+    callback taille(length, length);
+}
+
+export component OutilGenerateur inherits Rectangle {
+    property <length> col-g: 360px;
+    property <length> col-d: 320px;
+    property <length> dernier-x;
+    property <length> dernier-y;
+
+    Defilement {
+        x: 0; y: 0; width: root.col-g; height: root.height;
+        content-width: self.width;
+        content-height: gauche.preferred-height;
+        gauche := VerticalLayout {
+            alignment: start;
+            Carte {
+                height: contenu-carte-0.preferred-height;
+                contenu-carte-0 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Générer un jeu"; corps: Theme.texte-md; }
+                    Pilules { options: ["Gaussiennes 2D", "Gaussiennes 3D", "Spirales 3D"]; choisi: Generateur.mode; change(i) => { Generateur.choisir-mode(i); } }
+                    if Generateur.mode == 0: Note { text: "Cliquez-glissez dans le plan : le point de départ est le centre, l’étendue du geste donne l’écart-type sur chaque axe. Glissez un centre existant pour le déplacer."; font-size: Theme.texte-xs; }
+                    for c[i] in Generateur.classes: Rectangle {
+                        border-radius: Theme.r-md;
+                        background: Generateur.selection == i ? Theme.accent-doux : Theme.surface-1;
+                        border-width: 1px; border-color: Theme.filet;
+                        VerticalLayout {
+                            padding: Theme.e-sm; spacing: 6px;
+                            HorizontalLayout {
+                                spacing: Theme.e-xs;
+                                Rectangle {
+                                    y: (parent.height - self.height) / 2; width: 12px; height: 12px; border-radius: 6px;
+                                    background: Math.mod(i, 6) == 0 ? Theme.classe-0 : Math.mod(i, 6) == 1 ? Theme.classe-1 : Math.mod(i, 6) == 2 ? Theme.classe-2 : Math.mod(i, 6) == 3 ? Theme.classe-3 : Math.mod(i, 6) == 4 ? Theme.classe-4 : Theme.classe-5;
+                                }
+                                Champ { horizontal-stretch: 1; texte: c.nom; info: "Nom de la classe " + (i + 1); valide(t) => { Generateur.changer-nom(i, t); } }
+                                BoutonIcone { trace: Icones.croix; info: "Supprimer cette classe"; clic => { if (Generateur.classes.length > 1) { Generateur.supprimer(i); } } }
+                            }
+                            for p[j] in c.champs: HorizontalLayout {
+                                spacing: Theme.e-sm;
+                                Note { width: 110px; text: p.libelle; vertical-alignment: center; font-size: Theme.texte-xs; }
+                                Champ { horizontal-stretch: 1; texte: p.valeur; info: p.libelle; genre: decimal; valide(t) => { Generateur.changer-champ(i, j, t); } }
+                            }
+                        }
+                        TouchArea { clicked => { Generateur.selection = i; } }
+                    }
+                    Bouton { actif: Generateur.classes.length < 12; texte: "Ajouter une classe"; clic => { Generateur.ajouter(); } }
+                    HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Note { text: "Graine"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Champ { texte <=> Generateur.graine; info: "Graine"; genre: number; }
+                    }
+                    if Generateur.mode >= 1: HorizontalLayout {
+                        spacing: Theme.e-xs; height: 28px;
+                        Rectangle {
+                            y: (parent.height - self.height) / 2;
+                            width: 18px; height: 18px; border-radius: 4px; border-width: 2px;
+                            border-color: Generateur.bornes ? Theme.accent-texte : Theme.filet-fort;
+                            background: Generateur.bornes ? Theme.accent : transparent;
+                            accessible-role: checkbox; accessible-label: "ramener dans [0, 1]"; accessible-checked: Generateur.bornes;
+                            TouchArea { clicked => { Generateur.bornes = !Generateur.bornes; } }
+                        }
+                        Corps { text: "Bornes : ramener dans [0, 1]"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                    }
+                    if Generateur.mode == 2: Rectangle {
+                        height: bloc-0.preferred-height;
+                        bloc-0 := VerticalLayout {
+                            spacing: 4px;
+                            Note { text: "Axe des spirales"; font-size: Theme.texte-xs; }
+                            Pilules { options: ["commun, vertical (z)", "tiré pour chaque spirale"]; choisi <=> Generateur.axe; }
+                        }
+                    }
+                    Bouton { genre: "principal"; actif: !Generateur.calcul; texte: Generateur.calcul ? "Tirage par le moteur…" : "Générer avec le moteur"; clic => { Generateur.generer(); } }
+                    Note { text: "Même graine et mêmes réglages : exactement les mêmes points. Le tirage est fait par le moteur (générateur portable, sans dépendre de la plateforme)."; font-size: Theme.texte-xs; }
+                }
+            }
+        }
+    }
+
+    cadre := Rectangle {
+        x: root.col-g + Theme.e-lg; y: 0;
+        width: root.width - root.col-g - root.col-d - 2 * Theme.e-lg;
+        height: root.height - 30px;
+        background: Theme.surface-plot; border-width: 1px; border-color: Theme.filet; border-radius: Theme.r-lg; clip: true;
+        changed width => { Generateur.taille(self.width, self.height); }
+        changed height => { Generateur.taille(self.width, self.height); }
+        init => { Generateur.taille(self.width, self.height); }
+        Image { width: parent.width; height: parent.height; source: Generateur.vue; image-fit: fill; }
+        TouchArea {
+            mouse-cursor: Generateur.mode == 0 ? crosshair : self.pressed ? grabbing : grab;
+            pointer-event(ev) => {
+                if (Generateur.mode == 0) {
+                    if (ev.kind == PointerEventKind.down) { Generateur.souris(0, self.mouse-x / self.width, 1 - self.mouse-y / self.height); }
+                    if (ev.kind == PointerEventKind.up) { Generateur.souris(2, self.mouse-x / self.width, 1 - self.mouse-y / self.height); }
+                } else if (ev.kind == PointerEventKind.down) { root.dernier-x = self.mouse-x; root.dernier-y = self.mouse-y; }
+            }
+            moved => {
+                if (Generateur.mode == 0) { if (self.pressed) { Generateur.souris(1, self.mouse-x / self.width, 1 - self.mouse-y / self.height); } }
+                else if (self.pressed) { Generateur.tourner(self.mouse-x - root.dernier-x, self.mouse-y - root.dernier-y); root.dernier-x = self.mouse-x; root.dernier-y = self.mouse-y; }
+            }
+            scroll-event(ev) => { if (Generateur.mode != 0) { Generateur.zoomer(ev.delta-y > 0 ? 1 : -1); } accept }
+        }
+    }
+    Text {
+        x: cadre.x; y: cadre.height + 8px; width: cadre.width;
+        text: Generateur.legende; overflow: elide;
+        font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+    }
+
+    Defilement {
+        x: root.width - root.col-d; y: 0; width: root.col-d; height: root.height;
+        content-width: self.width;
+        content-height: droite.preferred-height;
+        droite := VerticalLayout {
+            alignment: start;
+            Carte {
+                height: contenu-carte-1.preferred-height;
+                contenu-carte-1 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: "Jeu généré"; corps: Theme.texte-md; }
+                        if Generateur.resultat: Badge { texte: "publié"; genre: "succes"; }
+                    }
+                    if Generateur.erreur != "": Text { text: Generateur.erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+                    if !Generateur.resultat && Generateur.erreur == "": Note { text: "Réglez les classes puis « Générer avec le moteur ». Les points affichés seront ceux du fichier publié."; }
+                    for f in Generateur.faits: HorizontalLayout {
+                        padding-top: 3px; padding-bottom: 3px; spacing: Theme.e-sm;
+                        Note { width: 90px; text: f.cle; font-size: Theme.texte-xs; }
+                        Text { horizontal-stretch: 1; text: f.valeur; wrap: word-wrap; horizontal-alignment: right; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.encre; }
+                    }
+                    if Generateur.resultat: Text { text: "Relu par le moteur"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    if Generateur.resultat: Note { text: Generateur.relu; font-size: Theme.texte-xs; }
+                    if Generateur.resultat: Rectangle { height: Theme.e-xs; }
+                    if Generateur.resultat: HorizontalLayout { alignment: start; Bouton { genre: "principal"; texte: "Étudier ce jeu"; icone: Icones.fleche; clic => { Generateur.etudier(); } } }
+                    if Generateur.resultat: HorizontalLayout { alignment: start; Bouton { icone: Icones.dossier; texte: "Enregistrer le CSV"; clic => { Generateur.enregistrer(); } } }
+                    if Generateur.resultat: Note { text: "Format Decid : classe puis attributs, sans en-tête. « Étudier ce jeu » l’ouvre dans l’étude (Données → Importer)."; font-size: Theme.texte-xs; }
+                }
+            }
+        }
+    }
+}

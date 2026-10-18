@@ -1,0 +1,277 @@
+// Outil « Pas a pas » : AdaBoost, perceptron, k-moyennes, EM et reseau Decid,
+// etape par etape. Chaque etape est un etat reellement publie par le moteur (trace.json + trace.f32).
+import { Theme } from "../theme.slint";
+import { Icone, Icones } from "../icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Champ, Pilules, Defileur, Defilement } from "../composants.slint";
+import { ParametreSaisi } from "bac-a-sable.slint";
+import { Fait } from "../etude.slint";
+import { Graphique, Trace, Etiquette } from "../graphique.slint";
+
+export global PasAPas {
+    in property <[string]> algorithmes: ["AdaBoost", "Perceptron", "k-moyennes", "EM", "Réseau Decid"];
+    in-out property <int> algorithme: 0;
+    in-out property <int> faible: 0;              // AdaBoost : 0 seuil, 1 hyperplan
+    in property <[ParametreSaisi]> parametres;
+    in-out property <int> init-kmeans: 0;         // 0 k-moyennes++, 1 au hasard
+    in-out property <bool> melanger: true;        // perceptron
+    in property <[string]> classes;
+    in-out property <int> classe-positive: 0;
+    in property <[string]> jeux;
+    in-out property <int> jeu: 0;
+    in property <[string]> attributs;
+    in-out property <int> axe-x: 0;
+    in-out property <int> axe-y: 1;
+    in-out property <int> part: 1;                // 25, 50, 75 %
+    in-out property <string> graine: "1";
+    in property <string> note-calcul;
+    in property <bool> calcul;
+    in property <string> erreur;
+    // deroule
+    in property <bool> trace-presente;
+    in property <int> nb-etapes;
+    in-out property <int> etape: 0;
+    in property <bool> lecture;
+    in-out property <int> vitesse: 1;             // lent, normal, rapide
+    in property <string> note-trace;              // trace bornee par le moteur
+    // vue
+    in property <image> plan;
+    in property <string> legende;
+    in property <string> courbe-titre;
+    in property <[Trace]> courbe;
+    in property <[Etiquette]> courbe-textes;
+    // etat de l'etape
+    in property <string> etat-titre;
+    in property <string> etat-badge;
+    in property <string> etat-texte;
+    in property <[Fait]> etat-faits;
+    in property <string> etat-fin;
+    // resultat final
+    in property <string> score-titre;
+    in property <string> score;
+    in property <bool> ajoute;
+    in property <bool> export-em;
+    callback choisir-algorithme(int);
+    callback choisir-jeu(int);
+    callback changer-parametre(int, string);
+    callback axes-changes();
+    callback calculer();
+    callback une-etape();
+    callback reinitialiser();
+    callback lire();
+    callback aller-etape(int);
+    callback ajouter();
+    callback exporter-em();
+    callback taille(length, length);
+}
+
+// Curseur d'etape : piste et poignee, glisser ou cliquer
+component Curseur inherits Rectangle {
+    in property <int> maximum;
+    in property <int> valeur;
+    callback change(int);
+    height: 28px;
+    accessible-role: slider;
+    accessible-value: valeur;
+    Rectangle { y: (parent.height - self.height) / 2; height: 4px; border-radius: 2px; background: Theme.surface-3; }
+    Rectangle {
+        x: 0; y: (parent.height - self.height) / 2; height: 4px; border-radius: 2px; background: Theme.accent-texte;
+        width: root.maximum > 0 ? root.width * root.valeur / root.maximum : 0px;
+    }
+    Rectangle {
+        width: 16px; height: 16px; border-radius: 8px; background: Theme.accent-texte;
+        border-width: 2px; border-color: Theme.surface-1;
+        x: (root.maximum > 0 ? (root.width - self.width) * root.valeur / root.maximum : 0px);
+        y: (parent.height - self.height) / 2;
+    }
+    zone := TouchArea {
+        mouse-cursor: pointer;
+        pointer-event(ev) => { if (ev.kind == PointerEventKind.down) { root.change(Math.round(clamp(self.mouse-x / self.width, 0, 1) * root.maximum)); } }
+        moved => { if (self.pressed) { root.change(Math.round(clamp(self.mouse-x / self.width, 0, 1) * root.maximum)); } }
+    }
+}
+
+export component OutilPasAPas inherits Rectangle {
+    property <bool> etroit: root.width < 1320px;
+    property <length> col-g: 290px;
+    property <length> col-d: 330px;
+
+    // ================= reglages
+    Defilement {
+        x: 0; y: 0; width: root.col-g; height: root.height;
+        content-width: self.width;
+        content-height: reglages.preferred-height;
+        reglages := VerticalLayout {
+            alignment: start;
+            Carte {
+                height: c1.preferred-height;
+                c1 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Algorithme"; corps: Theme.texte-md; }
+                    Defileur { etiquette: "Pas à pas"; options: PasAPas.algorithmes; choisi: PasAPas.algorithme; change(i) => { PasAPas.choisir-algorithme(i); } }
+                    if PasAPas.algorithme == 0: Rectangle {
+                        height: bloc-0.preferred-height;
+                        bloc-0 := VerticalLayout {
+                            spacing: 4px;
+                            Note { text: "Classifieur faible"; font-size: Theme.texte-xs; }
+                            Pilules { options: ["seuil sur un attribut", "hyperplan oblique"]; choisi <=> PasAPas.faible; }
+                        }
+                    }
+                    for p[i] in PasAPas.parametres: VerticalLayout {
+                        spacing: 4px;
+                        Note { text: p.libelle; font-size: Theme.texte-xs; }
+                        Champ { texte: p.valeur; info: p.libelle; genre: decimal; valide(t) => { PasAPas.changer-parametre(i, t); } }
+                    }
+                    if PasAPas.algorithme == 2: Rectangle {
+                        height: bloc-1.preferred-height;
+                        bloc-1 := VerticalLayout {
+                            spacing: 4px;
+                            Note { text: "Centres de départ"; font-size: Theme.texte-xs; }
+                            Pilules { options: ["k-moyennes++ (éloignés)", "au hasard"]; choisi <=> PasAPas.init-kmeans; }
+                        }
+                    }
+                    if PasAPas.algorithme == 1: HorizontalLayout {
+                        spacing: Theme.e-xs; height: 28px;
+                        Rectangle {
+                            y: (parent.height - self.height) / 2;
+                            width: 18px; height: 18px; border-radius: 4px; border-width: 2px;
+                            border-color: PasAPas.melanger ? Theme.accent-texte : Theme.filet-fort;
+                            background: PasAPas.melanger ? Theme.accent : transparent;
+                            accessible-role: checkbox; accessible-label: "Mélanger l’ordre à chaque époque"; accessible-checked: PasAPas.melanger;
+                            TouchArea { clicked => { PasAPas.melanger = !PasAPas.melanger; } }
+                        }
+                        Corps { text: "Mélanger l’ordre à chaque époque"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                    }
+                    if PasAPas.algorithme <= 1 && PasAPas.classes.length > 0: Defileur { etiquette: "Classe positive"; options: PasAPas.classes; choisi <=> PasAPas.classe-positive; }
+                    Rectangle { height: Theme.e-xs; }
+                    Text { text: "Jeu"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    Defileur { etiquette: "Jeu"; options: PasAPas.jeux; choisi: PasAPas.jeu; change(i) => { PasAPas.choisir-jeu(i); } }
+                    if PasAPas.attributs.length >= 2: Rectangle {
+                        height: bloc-2.preferred-height;
+                        bloc-2 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            Defileur { etiquette: "Axe horizontal"; options: PasAPas.attributs; choisi <=> PasAPas.axe-x; change => { PasAPas.axes-changes(); } }
+                            Defileur { etiquette: "Axe vertical"; options: PasAPas.attributs; choisi <=> PasAPas.axe-y; change => { PasAPas.axes-changes(); } }
+                        }
+                    }
+                    Note { text: "Part d’apprentissage"; font-size: Theme.texte-xs; }
+                    HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Pilules { horizontal-stretch: 1; options: ["25 %", "50 %", "75 %"]; choisi <=> PasAPas.part; }
+                        Champ { width: 80px; texte <=> PasAPas.graine; info: "Graine"; genre: number; }
+                    }
+                    Bouton { genre: "principal"; actif: !PasAPas.calcul; texte: PasAPas.calcul ? "Calcul par le moteur…" : "Calculer la trace"; clic => { PasAPas.calculer(); } }
+                    Note { text: PasAPas.note-calcul; font-size: Theme.texte-xs; }
+                    if PasAPas.erreur != "": Text { text: PasAPas.erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+                }
+            }
+        }
+    }
+
+    // ================= vue et courbe
+    centre := Rectangle {
+        x: root.col-g + Theme.e-lg; y: 0;
+        width: root.width - root.col-g - root.col-d - 2 * Theme.e-lg;
+        height: root.height;
+        cadre := Rectangle {
+            x: 0; y: 0; width: parent.width;
+            height: parent.height - (PasAPas.trace-presente ? 190px : 0px);
+            background: Theme.surface-plot;
+            border-width: 1px; border-color: Theme.filet; border-radius: Theme.r-lg;
+            clip: true;
+            changed width => { PasAPas.taille(self.width, self.height); }
+            changed height => { PasAPas.taille(self.width, self.height); }
+            init => { PasAPas.taille(self.width, self.height); }
+            Image { width: parent.width; height: parent.height; source: PasAPas.plan; image-fit: fill; }
+            Text {
+                x: Theme.e-sm; y: parent.height - self.height - Theme.e-sm; width: parent.width - 2 * Theme.e-sm;
+                text: PasAPas.legende; wrap: word-wrap;
+                font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+            }
+        }
+        if PasAPas.trace-presente: Carte {
+            x: 0; y: cadre.height + Theme.e-md; width: parent.width; height: 174px;
+            VerticalLayout {
+                padding: Theme.e-md; spacing: 4px;
+                Note { text: PasAPas.courbe-titre; font-size: Theme.texte-xs; font-weight: 600; }
+                Graphique { vb-l: 640; vb-h: 120; traces: PasAPas.courbe; etiquettes: PasAPas.courbe-textes; }
+            }
+        }
+    }
+
+    // ================= deroule et etat
+    Defilement {
+        x: root.width - root.col-d; y: 0; width: root.col-d; height: root.height;
+        content-width: self.width;
+        content-height: droite.preferred-height;
+        droite := VerticalLayout {
+            spacing: Theme.e-lg;
+            alignment: start;
+            Carte {
+                height: cd.preferred-height;
+                cd := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: "Déroulé"; corps: Theme.texte-md; }
+                        if PasAPas.trace-presente: Badge { texte: "calculé par le moteur"; genre: "succes"; }
+                    }
+                    HorizontalLayout {
+                        spacing: Theme.e-xs;
+                        Bouton { actif: !PasAPas.calcul; icone: Icones.fleche; texte: "Une étape  F5"; clic => { PasAPas.une-etape(); } }
+                        Bouton { genre: "fantome"; actif: PasAPas.trace-presente; texte: "Réinit.  F6"; clic => { PasAPas.reinitialiser(); } }
+                    }
+                    Bouton { actif: PasAPas.trace-presente; texte: PasAPas.lecture ? "Pause" : "Lecture"; clic => { PasAPas.lire(); } }
+                    HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Note { text: "Étape"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Curseur { horizontal-stretch: 1; maximum: max(0, PasAPas.nb-etapes - 1); valeur: PasAPas.etape; change(v) => { PasAPas.aller-etape(v); } }
+                        Text { text: PasAPas.trace-presente ? (PasAPas.etape + 1) + " / " + PasAPas.nb-etapes : "—"; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-2; }
+                    }
+                    Pilules { options: ["lent", "normal", "rapide"]; choisi <=> PasAPas.vitesse; }
+                    if PasAPas.note-trace != "": Note { text: PasAPas.note-trace; font-size: Theme.texte-xs; }
+                }
+            }
+            if !PasAPas.trace-presente: Carte {
+                height: ce0.preferred-height;
+                ce0 := VerticalLayout {
+                    padding: Theme.e-lg;
+                    Note { text: "À chaque étape : l’état réel publié par le moteur et ce qui vient de changer."; }
+                }
+            }
+            // carte de l'etape : sa hauteur suit le contenu (faits en nombre variable selon l'etape)
+            if PasAPas.trace-presente: Carte {
+                height: ce.preferred-height;
+                ce := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: PasAPas.etat-titre; corps: Theme.texte-md; }
+                        if PasAPas.etat-badge != "": Badge { texte: PasAPas.etat-badge; genre: "accent"; }
+                    }
+                    Corps { text: PasAPas.etat-texte; font-size: Theme.texte-sm; }
+                    for f in PasAPas.etat-faits: HorizontalLayout {
+                        height: 26px;
+                        Note { text: f.cle; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Text { horizontal-stretch: 1; text: f.valeur; horizontal-alignment: right; vertical-alignment: center; overflow: elide; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    }
+                    if PasAPas.etat-fin != "": Note { text: PasAPas.etat-fin; font-size: Theme.texte-xs; }
+                }
+            }
+            if PasAPas.trace-presente: Carte {
+                height: cf.preferred-height;
+                cf := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Note { text: PasAPas.score-titre; font-size: Theme.texte-xs; }
+                    Text { text: PasAPas.score; font-family: Theme.police-titre; font-size: Theme.texte-xl; color: Theme.encre; }
+                    Bouton { actif: !PasAPas.ajoute; texte: PasAPas.ajoute ? "Dans les Expériences" : "Ajouter aux Expériences"; clic => { PasAPas.ajouter(); } }
+                    if PasAPas.algorithme == 3: Rectangle {
+                        height: bloc-3.preferred-height;
+                        bloc-3 := VerticalLayout {
+                            spacing: 4px;
+                            Bouton { actif: PasAPas.export-em; icone: Icones.dossier; texte: "Exporter les données classées (CSV)"; clic => { PasAPas.exporter-em(); } }
+                            Note { text: "Export au format Decid : une ligne par point du jeu, le cluster EM calculé par le moteur en première colonne, puis les deux attributs du plan, sans en-tête."; font-size: Theme.texte-xs; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,242 @@
+// « Je decouvre » : une question, un pari, le resultat
+// calcule par le moteur, puis la manipulation. Le C++ (studio/src/Decouvrir.cpp) remplit le global et lance les calculs.
+import { Theme, CadreFenetre } from "theme.slint";
+import { Icone, Icones } from "icones.slint";
+import { Bascules, Titre, Corps, Note, Bouton, Carte, Badge, Pilules, Defilement } from "composants.slint";
+
+export struct Scenario { titre: string, resume: string, badges: [string], vignette: image }
+export struct Pari { texte: string, detail: string }
+
+export global Decouvrir {
+    in property <[Scenario]> scenarios;
+    in-out property <int> courant: -1;          // -1 : liste des questions
+    in property <int> etape: 0;                 // 0 pari, 1 resultat, 2 manipuler
+    in property <string> question;
+    in property <[Pari]> paris;
+    in-out property <int> pari: -1;
+    in property <int> bon: -1;
+    in property <string> verdict;
+    in property <string> explication;
+    in property <string> explorer-nom;
+    in property <[string]> explorer-valeurs;
+    in-out property <int> explorer-valeur: 0;
+    in property <string> explorer-aide;
+    in property <string> explorer-score;
+    in property <bool> trois-d;                 // scenario « dans l'espace »
+    in property <[string]> algos-3d: ["SVM", "k-PPV", "Forêt"];
+    in-out property <int> algo-3d: 0;
+    in property <image> vue;
+    in property <string> legende;
+    in property <bool> calcul;
+    in property <string> message;
+    callback ouvrir(int);
+    callback fermer();
+    callback lancer();
+    callback manipuler();
+    callback explorer(int);
+    callback choisir-algo-3d(int);
+    callback vers-etude();
+    callback taille-vue(length, length);
+    callback tourner(length, length);
+    callback zoomer(float);
+}
+
+component CarteScenario inherits Rectangle {
+    in property <Scenario> s;
+    callback clic();
+    border-radius: Theme.r-xl;
+    background: Theme.surface-2;
+    border-width: 1px;
+    border-color: zone.has-hover ? Theme.filet-fort : Theme.filet;
+    clip: true;
+    accessible-role: button;
+    accessible-label: s.titre;
+    accessible-description: s.resume;
+    VerticalLayout {
+        Rectangle {
+            height: 168px;
+            background: Theme.surface-plot;
+            Image { width: parent.width; height: parent.height; source: root.s.vignette; image-fit: cover; }
+        }
+        VerticalLayout {
+            padding: Theme.e-lg; spacing: 6px;
+            Titre { text: root.s.titre; corps: Theme.texte-lg; }
+            Corps { text: root.s.resume; font-size: Theme.texte-sm; }
+            HorizontalLayout { spacing: 6px; alignment: start; padding-top: 6px; for b in root.s.badges: Badge { texte: b; } }
+        }
+    }
+    zone := TouchArea { mouse-cursor: pointer; clicked => { root.clic(); } }
+}
+
+export component EcranDecouvrir inherits Rectangle {
+    callback accueil();
+    callback preferences-changees();
+    background: Theme.surface-0;
+    property <length> dernier-x;
+    property <length> dernier-y;
+
+    VerticalLayout {
+        // barre : retour, fil, bascules
+        Rectangle {
+            height: 56px;
+            background: Theme.surface-1;
+            Rectangle { y: parent.height - 1px; height: 1px; background: Theme.filet; }
+            HorizontalLayout {
+                padding-left: Theme.e-md; padding-right: Theme.e-md; padding-top: 9px; padding-bottom: 9px; spacing: Theme.e-md;
+                if Decouvrir.courant < 0: Bouton { genre: "fantome"; icone: Icones.retour; texte: "Accueil"; clic => { root.accueil(); } }
+                if Decouvrir.courant >= 0: Bouton { genre: "fantome"; icone: Icones.retour; texte: "Questions"; clic => { Decouvrir.fermer(); } }
+                Text {
+                    text: Decouvrir.courant < 0 ? "Je découvre" : "Je découvre · " + Decouvrir.scenarios[Decouvrir.courant].titre;
+                    vertical-alignment: center; overflow: elide;
+                    font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre-2;
+                }
+                Rectangle { horizontal-stretch: 1; }
+                Bascules { preferences-changees => { root.preferences-changees(); } }
+                Rectangle { width: CadreFenetre.largeur-commandes - Theme.e-md; }   // boutons de la fenetre
+            }
+        }
+
+        // ---- liste des questions
+        if Decouvrir.courant < 0: Defilement {
+            vertical-stretch: 1;
+            content-height: liste.preferred-height;
+            liste := VerticalLayout {
+                padding-left: max(Theme.e-2xl, (root.width - 1280px) / 2);
+                padding-right: max(Theme.e-2xl, (root.width - 1280px) / 2);
+                padding-top: Theme.e-2xl; padding-bottom: Theme.e-xl;
+                spacing: Theme.e-xl;
+                VerticalLayout {
+                    spacing: 6px;
+                    Titre { text: "Choisissez une question"; corps: Theme.texte-2xl; }
+                    Corps { text: "Chaque expérience commence par un pari. Vous lancez, le moteur calcule, vous voyez, puis vous manipulez."; font-size: Theme.texte-md; }
+                }
+                grille := Rectangle {
+                    property <int> colonnes: root.width > 1100px ? 3 : 2;
+                    property <length> l: (self.width - (self.colonnes - 1) * Theme.e-lg) / self.colonnes;
+                    height: ceil(Decouvrir.scenarios.length / self.colonnes) * (300px + Theme.e-lg) - Theme.e-lg;
+                    for s[i] in Decouvrir.scenarios: CarteScenario {
+                        x: Math.mod(i, grille.colonnes) * (grille.l + Theme.e-lg);
+                        y: floor(i / grille.colonnes) * (300px + Theme.e-lg);
+                        width: grille.l; height: 300px;
+                        s: s;
+                        clic => { Decouvrir.ouvrir(i); }
+                    }
+                }
+            }
+        }
+
+        // ---- lecteur : vue a gauche, panneau a droite
+        if Decouvrir.courant >= 0: HorizontalLayout {
+            vertical-stretch: 1;
+            Rectangle {
+                horizontal-stretch: 1;
+                cadre := Rectangle {
+                    property <length> cote: min(parent.width, parent.height) - 2 * Theme.e-lg;
+                    x: (parent.width - self.width) / 2; y: (parent.height - self.height) / 2;
+                    width: self.cote; height: self.cote;
+                    background: Theme.surface-plot;
+                    border-width: 1px; border-color: Theme.filet; border-radius: Theme.r-lg;
+                    clip: true;
+                    changed width => { Decouvrir.taille-vue(self.width, self.height); }
+                    init => { Decouvrir.taille-vue(self.width, self.height); }
+                    Image { width: parent.width; height: parent.height; source: Decouvrir.vue; image-fit: fill; }
+                    Text {
+                        x: Theme.e-sm; y: parent.height - self.height - Theme.e-sm; width: parent.width - 2 * Theme.e-sm;
+                        text: Decouvrir.legende; overflow: elide;
+                        font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+                    }
+                    if Decouvrir.trois-d && Decouvrir.etape >= 1: Rectangle {
+                        x: Theme.e-sm; y: Theme.e-sm; width: 240px; height: 36px;
+                        Pilules { width: parent.width; options: Decouvrir.algos-3d; choisi <=> Decouvrir.algo-3d; change(i) => { Decouvrir.choisir-algo-3d(i); } }
+                    }
+                    if Decouvrir.trois-d: TouchArea {
+                        mouse-cursor: self.pressed ? grabbing : grab;
+                        pointer-event(ev) => { if (ev.kind == PointerEventKind.down) { root.dernier-x = self.mouse-x; root.dernier-y = self.mouse-y; } }
+                        moved => {
+                            if (self.pressed) {
+                                Decouvrir.tourner(self.mouse-x - root.dernier-x, self.mouse-y - root.dernier-y);
+                                root.dernier-x = self.mouse-x; root.dernier-y = self.mouse-y;
+                            }
+                        }
+                        scroll-event(ev) => { Decouvrir.zoomer(ev.delta-y > 0 ? 1 : -1); accept }
+                    }
+                }
+            }
+            Rectangle {
+                width: root.width > 1280px ? 400px : 340px;
+                background: Theme.surface-1;
+                Rectangle { x: 0; width: 1px; background: Theme.filet; }
+                Defilement {
+                    fond: Theme.surface-1;   // fondu des bords dans la couleur du conteneur
+                    content-height: panneau.preferred-height;
+                    panneau := VerticalLayout {
+                        padding-left: Theme.e-lg; padding-right: Theme.e-lg; padding-top: Theme.e-xl; padding-bottom: Theme.e-xl;
+                        spacing: Theme.e-lg;
+                        Text {
+                            text: Decouvrir.etape == 0 ? "Étape 1 · Votre pari" : Decouvrir.etape == 1 ? "Étape 2 · Le résultat" : "Étape 3 · À vous de jouer";
+                            font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.accent-texte;
+                        }
+                        Titre { text: Decouvrir.question; corps: Theme.texte-lg; }
+                        VerticalLayout {
+                            spacing: Theme.e-xs;
+                            for p[k] in Decouvrir.paris: Rectangle {
+                                height: ligne.preferred-height + 24px;
+                                border-radius: Theme.r-md;
+                                property <bool> juste: Decouvrir.etape >= 1 && k == Decouvrir.bon;
+                                background: self.juste ? Theme.succes-doux : Decouvrir.pari == k ? Theme.accent-doux : Theme.surface-2;
+                                border-width: Decouvrir.pari == k || self.juste ? 2px : 1px;
+                                border-color: self.juste ? Theme.succes : Decouvrir.pari == k ? Theme.accent-texte : Theme.filet;
+                                accessible-role: radio-button; accessible-label: p.texte; accessible-checked: Decouvrir.pari == k;
+                                ligne := HorizontalLayout {
+                                    x: 14px; y: 12px; width: parent.width - 28px; height: self.preferred-height; spacing: Theme.e-sm;
+                                    Rectangle {
+                                        y: (parent.height - self.height) / 2;
+                                        width: 16px; height: 16px; border-radius: 8px; border-width: 2px;
+                                        border-color: Decouvrir.pari == k ? Theme.accent-texte : Theme.filet-fort;
+                                        Rectangle { width: 6px; height: 6px; border-radius: 3px; background: Theme.accent-texte; visible: Decouvrir.pari == k; }
+                                    }
+                                    VerticalLayout {
+                                        Text { text: p.texte; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                                        if p.detail != "": Note { text: p.detail; font-size: Theme.texte-xs; }
+                                    }
+                                }
+                                TouchArea { enabled: Decouvrir.etape == 0; mouse-cursor: Decouvrir.etape == 0 ? pointer : default; clicked => { Decouvrir.pari = k; } }
+                            }
+                        }
+                        if Decouvrir.etape == 0: Note { text: Decouvrir.calcul ? "Choisissez une réponse ; le moteur prépare déjà l’expérience." : "Choisissez une réponse, puis lancez l’expérience."; }
+                        if Decouvrir.etape >= 1: Rectangle {
+                            height: v.preferred-height;
+                            border-radius: Theme.r-md;
+                            background: Theme.surface-2;
+                            border-width: 1px;
+                            border-color: Decouvrir.pari == Decouvrir.bon ? Theme.succes : Theme.filet;
+                            v := VerticalLayout {
+                                padding: Theme.e-md; spacing: 6px;
+                                Text { text: Decouvrir.verdict; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Decouvrir.pari == Decouvrir.bon ? Theme.succes : Theme.encre; }
+                                Corps { text: Decouvrir.explication; font-size: Theme.texte-sm; }
+                            }
+                        }
+                        if Decouvrir.etape == 2 && Decouvrir.explorer-valeurs.length > 0: Rectangle {
+                            height: bloc-0.preferred-height;
+                            bloc-0 := VerticalLayout {
+                                spacing: Theme.e-sm;
+                                Note { text: Decouvrir.explorer-nom; font-size: Theme.texte-xs; }
+                                Pilules { options: Decouvrir.explorer-valeurs; choisi <=> Decouvrir.explorer-valeur; change(i) => { Decouvrir.explorer(i); } }
+                                Note { text: Decouvrir.explorer-aide; font-size: Theme.texte-xs; }
+                                Text { text: Decouvrir.explorer-score; font-family: Theme.police-titre; font-size: Theme.texte-xl; color: Theme.encre; }
+                            }
+                        }
+                        if Decouvrir.message != "": Text { text: Decouvrir.message; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; color: Decouvrir.calcul ? Theme.accent-texte : Theme.alerte; }
+                        HorizontalLayout {
+                            spacing: Theme.e-sm; alignment: space-between;
+                            Bouton { genre: "fantome"; texte: "Autre question"; clic => { Decouvrir.fermer(); } }
+                            if Decouvrir.etape == 0: Bouton { genre: "principal"; actif: Decouvrir.pari >= 0; texte: "Lancer l’expérience"; clic => { Decouvrir.lancer(); } }
+                            if Decouvrir.etape == 1: Bouton { genre: "principal"; texte: Decouvrir.trois-d ? "Comparer les trois" : "Manipuler"; icone: Icones.fleche; clic => { Decouvrir.manipuler(); } }
+                            if Decouvrir.etape == 2: Bouton { texte: "Ouvrir dans l’étude"; clic => { Decouvrir.vers-etude(); } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

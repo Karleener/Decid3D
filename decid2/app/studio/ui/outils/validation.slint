@@ -1,0 +1,324 @@
+// Outil « Validation croisee et balayage » : k plis sur la part d'apprentissage
+// ou sur tout le fichier, puis balayage logarithmique d'un parametre avec le meme protocole. Tout est calcule par le
+// moteur (operations validation et balayage) ; le C++ (studio/src/outils/Validation.cpp) lit les artefacts.
+import { Theme } from "../theme.slint";
+import { Icone, Icones } from "../icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Champ, Pilules, Defileur, Defilement } from "../composants.slint";
+import { ParametreSaisi } from "bac-a-sable.slint";
+import { Fait, LigneConfusion } from "../etude.slint";
+import { Graphique, Trace, Etiquette } from "../graphique.slint";
+
+export struct Pli { numero: int, points: int, exactitude: string, fraction: float }
+export struct LigneBalayage { valeur: string, moyenne: string, ecart: string, hors: string, meilleur: bool }
+
+export global Validation {
+    in property <[string]> jeux;
+    in-out property <int> jeu: 0;
+    in property <string> resume;
+    in property <[string]> familles;
+    in-out property <int> famille: 1;
+    in property <[ParametreSaisi]> parametres;
+    in-out property <int> perimetre: 0;          // 0 part d'apprentissage, 1 tout le fichier
+    in-out property <int> part: 1;               // 25, 50, 75 %
+    in-out property <string> graine: "42";
+    in-out property <int> k: 8;                  // indice dans 2..10
+    in-out property <string> graine-plis: "1";
+    in-out property <int> mode: 1;               // 0 ordre du fichier, 1 melange
+    in-out property <bool> stratifie: false;
+    in property <[string]> balayables;
+    in-out property <int> balaye: 0;
+    in-out property <string> debut;
+    in-out property <string> fin;
+    in-out property <string> par-decade;
+    in property <[string]> classes;
+    in-out property <int> classe-positive: 0;
+    in property <string> occupe;                 // "", "validation", "balayage"
+    in property <string> erreur;
+    // validation
+    in property <bool> val-presente;
+    in property <string> val-titre;
+    in property <string> val-protocole;
+    in property <[Pli]> plis;
+    in property <[Fait]> val-faits;
+    in property <string> val-note;
+    in property <[string]> conf-classes;
+    in property <[LigneConfusion]> confusion;
+    in property <bool> ajoutee;
+    // balayage
+    in property <bool> bal-presente;
+    in property <string> bal-titre;
+    in property <string> bal-protocole;
+    in property <string> meilleur;
+    in property <string> critere;
+    in property <bool> en-bord;
+    in property <string> en-bord-texte;
+    in property <[Trace]> courbe;
+    in property <[Etiquette]> courbe-textes;
+    in property <[LigneBalayage]> tableau;
+    in property <[Trace]> roc;
+    in property <[Etiquette]> roc-textes;
+    in property <string> roc-texte;
+    in property <string> roc-note;
+    callback choisir-jeu(int);
+    callback choisir-famille(int);
+    callback changer-parametre(int, string);
+    callback choisir-balaye(int);
+    callback lancer-validation();
+    callback lancer-balayage();
+    callback ajouter();
+}
+
+component Section inherits Text {
+    font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre;
+}
+
+export component OutilValidation inherits Rectangle {
+    property <bool> etroit: root.width < 980px;
+    property <bool> tableau-ouvert: false;
+
+    // ================= reglages
+    Defilement {
+        x: 0; y: 0;
+        width: root.etroit ? root.width : 340px;
+        height: root.etroit ? min(root.height * 0.5, reglages.preferred-height) : root.height;
+        content-width: self.width;
+        content-height: reglages.preferred-height;
+        reglages := VerticalLayout {
+            spacing: Theme.e-lg;
+            alignment: start;
+            Carte {
+                height: c1.preferred-height;
+                c1 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Jeu et modèle"; corps: Theme.texte-md; }
+                    Defileur { etiquette: "Jeu"; options: Validation.jeux; choisi: Validation.jeu; change(i) => { Validation.choisir-jeu(i); } }
+                    if Validation.resume != "": Note { text: Validation.resume; font-size: Theme.texte-xs; }
+                    Defileur { etiquette: "Algorithme"; options: Validation.familles; choisi: Validation.famille; change(i) => { Validation.choisir-famille(i); } }
+                    for p[i] in Validation.parametres: VerticalLayout {
+                        spacing: 4px;
+                        Note { text: p.libelle; font-size: Theme.texte-xs; }
+                        Champ { texte: p.valeur; info: p.libelle; genre: decimal; valide(t) => { Validation.changer-parametre(i, t); } }
+                    }
+                    Note { text: "Points utilisés"; font-size: Theme.texte-xs; }
+                    Pilules { options: ["part d’apprentissage", "tout le fichier"]; choisi <=> Validation.perimetre; }
+                    if Validation.perimetre == 0: HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Pilules { horizontal-stretch: 1; options: ["25 %", "50 %", "75 %"]; choisi <=> Validation.part; }
+                        Champ { width: 90px; texte <=> Validation.graine; info: "Graine du partage"; genre: number; }
+                    }
+                    Rectangle { height: Theme.e-xs; }
+                    Section { text: "Validation croisée"; }
+                    Defileur { etiquette: "Plis k"; options: ["2", "3", "4", "5", "6", "7", "8", "9", "10"]; choisi <=> Validation.k; }
+                    Note { text: "Répartition dans les plis"; font-size: Theme.texte-xs; }
+                    Pilules { options: ["ordre du fichier", "mélangé"]; choisi <=> Validation.mode; }
+                    if Validation.mode == 1: HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Note { text: "Graine des plis"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Champ { texte <=> Validation.graine-plis; info: "Graine des plis"; genre: number; }
+                    }
+                    HorizontalLayout {
+                        spacing: Theme.e-xs; height: 28px;
+                        Rectangle {
+                            y: (parent.height - self.height) / 2;
+                            width: 18px; height: 18px; border-radius: 4px; border-width: 2px;
+                            border-color: Validation.stratifie ? Theme.accent-texte : Theme.filet-fort;
+                            background: Validation.stratifie ? Theme.accent : transparent;
+                            accessible-role: checkbox; accessible-label: "Garder les proportions des classes dans chaque pli"; accessible-checked: Validation.stratifie;
+                            TouchArea { clicked => { Validation.stratifie = !Validation.stratifie; } }
+                        }
+                        Corps { text: "Garder les proportions des classes dans chaque pli"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                    }
+                    Bouton {
+                        genre: "principal"; actif: Validation.occupe == "";
+                        texte: Validation.occupe == "validation" ? "Validation en cours…" : "Lancer la validation croisée";
+                        clic => { Validation.lancer-validation(); }
+                    }
+                    Rectangle { height: Theme.e-xs; }
+                    Section { text: "Balayage d’un paramètre"; }
+                    if Validation.balayables.length == 0: Note { text: "Ce modèle n’a pas de paramètre balayable par le moteur. Les paramètres balayables sont γ et C (SVM), le nombre d’arbres et la profondeur (forêt), k (k-PPV et EM)."; font-size: Theme.texte-xs; }
+                    if Validation.balayables.length > 0: Rectangle {
+                        height: bloc-0.preferred-height;
+                        bloc-0 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            Defileur { etiquette: "Paramètre"; options: Validation.balayables; choisi: Validation.balaye; change(i) => { Validation.choisir-balaye(i); } }
+                            HorizontalLayout {
+                                spacing: Theme.e-sm;
+                                VerticalLayout { spacing: 4px; Note { text: "De"; font-size: Theme.texte-xs; } Champ { texte <=> Validation.debut; info: "Début de la grille"; genre: decimal; } }
+                                VerticalLayout { spacing: 4px; Note { text: "à"; font-size: Theme.texte-xs; } Champ { texte <=> Validation.fin; info: "Fin de la grille"; genre: decimal; } }
+                                VerticalLayout { spacing: 4px; Note { text: "par décade"; font-size: Theme.texte-xs; } Champ { texte <=> Validation.par-decade; info: "Valeurs par décade"; genre: number; } }
+                            }
+                            if Validation.classes.length > 0: Defileur { etiquette: "Classe positive"; options: Validation.classes; choisi <=> Validation.classe-positive; }
+                            Bouton {
+                                actif: Validation.occupe == "";
+                                texte: Validation.occupe == "balayage" ? "Balayage en cours…" : "Lancer le balayage";
+                                clic => { Validation.lancer-balayage(); }
+                            }
+                            Note { text: "Grille logarithmique : chaque valeur est évaluée par la même validation croisée, sans jamais regarder le test."; font-size: Theme.texte-xs; }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ================= resultats
+    Defilement {
+        x: root.etroit ? 0 : 340px + Theme.e-lg;
+        y: root.etroit ? min(root.height * 0.5, reglages.preferred-height) + Theme.e-lg : 0;
+        width: root.etroit ? root.width : root.width - 340px - Theme.e-lg;
+        height: root.height - self.y;
+        content-width: self.width;
+        content-height: resultats.preferred-height;
+        resultats := VerticalLayout {
+            spacing: Theme.e-lg;
+            alignment: start;
+            if Validation.erreur != "": Rectangle {
+                height: er.preferred-height + 20px; border-radius: Theme.r-md; background: Theme.alerte-doux;
+                er := Text { x: Theme.e-md; width: parent.width - 2 * Theme.e-md; text: Validation.erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+            }
+            // ---- validation
+            Carte {
+                height: cv.preferred-height;
+                cv := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: Validation.val-presente ? Validation.val-titre : "Validation croisée"; corps: Theme.texte-md; }
+                        if Validation.val-presente: Badge { texte: "calculé par le moteur"; genre: "succes"; }
+                    }
+                    if !Validation.val-presente: Corps { text: "Le périmètre est coupé en k plis. Chaque pli sert une fois de validation pendant que le modèle apprend sur les k − 1 autres."; font-size: Theme.texte-sm; }
+                    if !Validation.val-presente: Note { text: "Réglez k et la répartition, puis « Lancer la validation croisée »."; font-size: Theme.texte-xs; }
+                    if Validation.val-presente: Rectangle {
+                        height: bloc-1.preferred-height;
+                        bloc-1 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            Note { text: Validation.val-protocole; font-size: Theme.texte-xs; }
+                            HorizontalLayout { alignment: start; Bouton { actif: !Validation.ajoutee; icone: Validation.ajoutee ? "" : Icones.fleche; texte: Validation.ajoutee ? "Dans les Expériences" : "Ajouter aux Expériences"; clic => { Validation.ajouter(); } } }
+                            HorizontalLayout {
+                                spacing: Theme.e-lg;
+                                // tableau par pli
+                                VerticalLayout {
+                                    horizontal-stretch: 1;
+                                    spacing: 2px;
+                                    HorizontalLayout {
+                                        spacing: Theme.e-sm; height: 26px;
+                                        Note { width: 34px; text: "Pli"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                        Note { width: 70px; text: "Points"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                        Note { width: 76px; text: "Exactitude"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                    }
+                                    for p in Validation.plis: HorizontalLayout {
+                                        spacing: Theme.e-sm; height: 26px;
+                                        Corps { width: 34px; text: p.numero; vertical-alignment: center; font-size: Theme.texte-sm; }
+                                        Corps { width: 70px; text: p.points; vertical-alignment: center; font-size: Theme.texte-sm; }
+                                        Text { width: 76px; text: p.exactitude; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                                        Rectangle {
+                                            horizontal-stretch: 1;
+                                            Rectangle { x: 0; height: 6px; width: parent.width; border-radius: 3px; background: Theme.surface-3; }
+                                            Rectangle { x: 0; height: 6px; width: parent.width * p.fraction; border-radius: 3px; background: Theme.accent-texte; }
+                                        }
+                                    }
+                                }
+                                // faits et confusion hors pli
+                                VerticalLayout {
+                                    horizontal-stretch: 1;
+                                    spacing: 4px;
+                                    for f in Validation.val-faits: HorizontalLayout {
+                                        padding-top: 3px; padding-bottom: 3px;
+                                        Note { text: f.cle; vertical-alignment: center; font-size: Theme.texte-xs; }
+                                        Text { horizontal-stretch: 1; text: f.valeur; horizontal-alignment: right; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                                    }
+                                    Note { text: Validation.val-note; font-size: Theme.texte-xs; }
+                                    Section { text: "Où se trompe-t-il, hors pli ?"; }
+                                    for l[r] in Validation.confusion: HorizontalLayout {
+                                        spacing: 4px; height: 30px;
+                                        Note { width: 60px; text: "réel " + l.reel; vertical-alignment: center; font-size: Theme.texte-xs; overflow: elide; }
+                                        for v[c] in l.cellules: Rectangle {
+                                            horizontal-stretch: 1; min-width: 0px; preferred-width: 0px;
+                                            border-radius: 6px;
+                                            background: r == c ? Theme.succes-doux : v > 0 ? Theme.alerte-doux : Theme.surface-1;
+                                            Text { text: v; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: r == c ? Theme.succes : v > 0 ? Theme.alerte : Theme.encre-3; }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // ---- balayage
+            Carte {
+                height: cb.preferred-height;
+                cb := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: Validation.bal-presente ? Validation.bal-titre : "Balayage"; corps: Theme.texte-md; }
+                        if Validation.bal-presente: Badge { texte: "calculé par le moteur"; genre: "succes"; }
+                    }
+                    if !Validation.bal-presente: Corps { text: "Le même protocole de validation croisée est répété pour chaque valeur d’une grille logarithmique du paramètre choisi."; font-size: Theme.texte-sm; }
+                    if !Validation.bal-presente: Note { text: "Choisissez le paramètre et la grille, puis « Lancer le balayage »."; font-size: Theme.texte-xs; }
+                    if Validation.bal-presente: Rectangle {
+                        height: bloc-2.preferred-height;
+                        bloc-2 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            alignment: start;
+                            Note { text: Validation.bal-protocole; font-size: Theme.texte-xs; }
+                            Rectangle {
+                                height: mb.preferred-height + 20px;
+                                border-radius: Theme.r-md;
+                                background: Validation.en-bord ? Theme.alerte-doux : Theme.succes-doux;
+                                border-width: 1px; border-color: Validation.en-bord ? Theme.alerte : Theme.succes;
+                                mb := VerticalLayout {
+                                    x: Theme.e-md; y: 10px; width: parent.width - 2 * Theme.e-md; height: self.preferred-height;
+                                    spacing: 4px;
+                                    Text { text: "Meilleur réglage : " + Validation.meilleur; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                                    Note { text: "Critère du moteur : " + Validation.critere + "."; font-size: Theme.texte-xs; }
+                                    if Validation.en-bord: Text { text: Validation.en-bord-texte; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; color: Theme.alerte; }
+                                }
+                            }
+                            Graphique { vb-l: 640; vb-h: 300; traces: Validation.courbe; etiquettes: Validation.courbe-textes; }
+                            Note { text: "Trait plein : exactitude moyenne par pli · bande : ± un écart-type entre plis · pointillés : exactitude hors pli · axe horizontal logarithmique."; font-size: Theme.texte-xs; }
+                            Bouton { genre: "fantome"; texte: (root.tableau-ouvert ? "Masquer" : "Afficher") + " le tableau des " + Validation.tableau.length + " valeurs"; clic => { root.tableau-ouvert = !root.tableau-ouvert; } }
+                            if root.tableau-ouvert: Rectangle {
+                                height: bloc-3.preferred-height;
+                                bloc-3 := VerticalLayout {
+                                    spacing: 2px;
+                                    HorizontalLayout {
+                                        spacing: Theme.e-sm; height: 26px;
+                                        Note { horizontal-stretch: 1; text: "Valeur"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                        Note { horizontal-stretch: 1; text: "Moyenne par pli"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                        Note { horizontal-stretch: 1; text: "Écart-type"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                        Note { horizontal-stretch: 1; text: "Hors pli"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                                    }
+                                    for t in Validation.tableau: Rectangle {
+                                        height: 28px; border-radius: 6px;
+                                        background: t.meilleur ? Theme.accent-doux : transparent;
+                                        HorizontalLayout {
+                                            spacing: Theme.e-sm; padding-left: 4px;
+                                            Corps { horizontal-stretch: 1; text: t.valeur + (t.meilleur ? "  · meilleur" : ""); vertical-alignment: center; font-size: Theme.texte-sm; }
+                                            Corps { horizontal-stretch: 1; text: t.moyenne; vertical-alignment: center; font-size: Theme.texte-sm; }
+                                            Corps { horizontal-stretch: 1; text: t.ecart; vertical-alignment: center; font-size: Theme.texte-sm; }
+                                            Corps { horizontal-stretch: 1; text: t.hors; vertical-alignment: center; font-size: Theme.texte-sm; }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // ---- graphe FNR / (100 - FPR)
+            if Validation.bal-presente: Carte {
+                height: cr.preferred-height;
+                cr := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout {
+                        Titre { text: "Ce n’est pas une courbe ROC"; corps: Theme.texte-md; }
+                        Badge { texte: "un point par modèle"; }
+                    }
+                    Corps { text: Validation.roc-texte; font-size: Theme.texte-sm; }
+                    HorizontalLayout { alignment: start; Graphique { width: 420px; vb-l: 352; vb-h: 354; traces: Validation.roc; etiquettes: Validation.roc-textes; } }
+                    Note { text: Validation.roc-note; font-size: Theme.texte-xs; }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 46">
+  <style>@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600&amp;display=swap");.w{font-family:Manrope,"Segoe UI",sans-serif;font-weight:600;font-size:38px;letter-spacing:-1.33px}</style>
+  <g transform="translate(-7 0) scale(.46)"><path fill="#151946" fill-rule="evenodd" d="M16 12H48A38 38 0 0 1 78.725 27.639L16 75.05ZM25 36a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+  <path fill="#151946" d="M16 83.85L82.332 33.713A38 38 0 0 1 48 88H16Z"/></g>
+  <text class="w" x="46" y="36.5" fill="#151946">Decid</text>
+</svg>

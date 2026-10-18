@@ -1,0 +1,389 @@
+// Coquille de l'etude :
+// barre de menus, etapes Donnees · Modele · Resultats en bas, ecran outil (titre + Retour), dialogue, toast.
+import { Theme, CadreFenetre } from "theme.slint";
+import { Icone, Icones } from "icones.slint";
+import { Signature, Bascules, BoutonIcone, Titre, Corps, Note, Bouton, Carte, Badge, Defilement } from "composants.slint";
+
+export struct EntreeMenu {
+    libelle: string,
+    raccourci: string,
+    action: string,
+    separateur: bool,
+    inactif: bool,
+    courant: bool,
+    note: bool,          // ligne d'information (non cliquable)
+}
+
+// Une experience de la seance. Deux experiences ne se comparent directement que sur les memes donnees
+// ET les memes points de test : cle-donnees et cle-protocole portent ces deux identites.
+export struct Experience {
+    titre: string,
+    jeu-nom: string,
+    protocole-nom: string,
+    score: string,
+    cle-donnees: string,
+    cle-protocole: string,
+}
+
+// ---------- Barre du haut : signature, menus, bascules ----------
+export component BarreHaut inherits Rectangle {
+    in property <[string]> menus;
+    in property <int> menu-ouvert: -1;
+    in property <string> projet;          // nom du projet (la barre tient lieu de barre de titre)
+    callback accueil();
+    callback ouvrir-menu(int, length);    // indice, abscisse du bouton dans la fenetre
+    callback survol-menu(int, length);
+    callback preferences-changees();
+    height: 56px;
+    background: Theme.surface-1;
+    Rectangle { y: parent.height - 1px; height: 1px; background: Theme.filet; }
+    HorizontalLayout {
+        padding-left: Theme.e-md;
+        padding-right: Theme.e-md;
+        padding-top: 9px;
+        padding-bottom: 9px;
+        spacing: Theme.e-md;
+        Rectangle {
+            width: sig.preferred-width;
+            sig := Signature { tuile: 30px; corps: 18px; }
+            TouchArea { mouse-cursor: pointer; clicked => { root.accueil(); } }
+            accessible-role: button;
+            accessible-label: "Decid, retour à l’accueil";
+        }
+        HorizontalLayout {
+            spacing: 2px;
+            alignment: start;
+            for nom[i] in root.menus: Rectangle {
+                y: (parent.height - self.height) / 2;
+                height: 32px;
+                width: libelle.preferred-width + 20px;
+                border-radius: Theme.r-sm;
+                background: root.menu-ouvert == i || zone.has-hover ? Theme.surface-3 : transparent;
+                accessible-role: button;
+                accessible-label: nom;
+                libelle := Text {
+                    text: nom;
+                    font-family: Theme.police-texte;
+                    font-size: Theme.texte-sm;
+                    letter-spacing: Theme.interlettre;
+                    color: root.menu-ouvert == i || zone.has-hover ? Theme.encre : Theme.encre-2;
+                }
+                zone := TouchArea {
+                    clicked => { root.ouvrir-menu(i, self.absolute-position.x); }
+                    changed has-hover => { if (self.has-hover) { root.survol-menu(i, self.absolute-position.x); } }
+                }
+            }
+        }
+        Text {
+            horizontal-stretch: 1;
+            text: root.projet;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            overflow: elide;
+            font-family: Theme.police-texte;
+            font-size: Theme.texte-sm;
+            letter-spacing: Theme.interlettre;
+            color: Theme.encre-3;
+        }
+        Bascules { preferences-changees => { root.preferences-changees(); } }
+        Rectangle { width: CadreFenetre.largeur-commandes - Theme.e-md; }   // boutons de la fenetre
+    }
+}
+
+// ---------- Liste deroulante d'un menu ----------
+export component ListeMenu inherits Rectangle {
+    in property <[EntreeMenu]> entrees;
+    callback choisir(string);
+    width: max(260px, colonne.preferred-width + 12px);
+    height: colonne.preferred-height + 12px;
+    background: Theme.surface-2;
+    border-width: 1px;
+    border-color: Theme.filet-fort;
+    border-radius: Theme.r-md;
+    drop-shadow-blur: 32px;
+    drop-shadow-offset-y: 12px;
+    drop-shadow-color: Theme.ombre;
+    TouchArea { }   // un clic dans la liste ne la ferme pas
+    colonne := VerticalLayout {
+        x: 6px; y: 6px;
+        width: parent.width - 12px;
+        for e in root.entrees: Rectangle {
+            height: e.separateur ? 13px : e.note ? note.preferred-height + 16px : 34px;
+            border-radius: Theme.r-sm;
+            background: !e.separateur && !e.note && !e.inactif && zone.has-hover ? Theme.surface-3 : transparent;
+            accessible-role: button;
+            accessible-label: e.libelle;
+            if e.separateur: Rectangle { x: 4px; width: parent.width - 8px; height: 1px; background: Theme.filet; }
+            note := Text {
+                visible: e.note;
+                x: 12px; width: min(parent.width - 24px, 236px);
+                text: e.note ? e.libelle : "";
+                wrap: word-wrap;
+                font-family: Theme.police-texte;
+                font-size: Theme.texte-xs;
+                letter-spacing: Theme.interlettre;
+                color: Theme.encre-3;
+            }
+            if !e.separateur && !e.note: HorizontalLayout {
+                padding-left: 10px;
+                padding-right: 10px;
+                spacing: 10px;
+                opacity: e.inactif ? 0.45 : 1;
+                Icone {
+                    y: (parent.height - self.height) / 2;
+                    width: 16px; height: 16px;
+                    trace: e.courant ? Icones.coche : Icones.action(e.action);
+                    couleur: e.courant ? Theme.accent-texte : Theme.encre-2;
+                }
+                Text {
+                    horizontal-stretch: 1;
+                    text: e.libelle;
+                    vertical-alignment: center;
+                    font-family: Theme.police-texte;
+                    font-size: Theme.texte-sm;
+                    font-weight: e.courant ? 600 : 400;
+                    letter-spacing: Theme.interlettre;
+                    color: Theme.encre;
+                }
+                Text {
+                    text: e.raccourci;
+                    vertical-alignment: center;
+                    font-family: Theme.police-texte;
+                    font-size: Theme.texte-xs;
+                    color: Theme.encre-3;
+                }
+            }
+            zone := TouchArea {
+                enabled: !e.separateur && !e.note && !e.inactif;
+                clicked => { root.choisir(e.action); }
+            }
+        }
+    }
+}
+
+// ---------- Barre des etapes, en bas, toujours au meme endroit ----------
+export component BarreEtapes inherits Rectangle {
+    in property <string> etape;
+    in property <string> fil;
+    callback choisir(string);
+    height: 61px;
+    background: Theme.surface-1;
+    Rectangle { height: 1px; y: 0; background: Theme.filet; }
+    property <[{cle: string, nom: string}]> etapes: [{ cle: "donnees", nom: "Données" }, { cle: "modele", nom: "Modèle" }, { cle: "resultats", nom: "Résultats" }];
+    rangee := HorizontalLayout {
+        x: (parent.width - self.preferred-width) / 2;
+        width: self.preferred-width;
+        alignment: center;
+        for et[i] in root.etapes: HorizontalLayout {
+            if i > 0: Rectangle { width: 40px + 2 * Theme.e-sm; Rectangle { width: 40px; height: 1px; background: Theme.filet-fort; } }
+            Rectangle {
+                y: (parent.height - self.height) / 2;
+                height: 36px;
+                width: contenu.preferred-width;
+                border-radius: self.height / 2;
+                background: root.etape == et.cle ? Theme.surface-3 : zone.has-hover ? Theme.surface-2 : transparent;
+                accessible-role: tab;
+                accessible-label: et.nom;
+                accessible-checked: root.etape == et.cle;
+                contenu := HorizontalLayout {
+                    padding-left: Theme.e-md;
+                    padding-right: Theme.e-md;
+                    spacing: 8px;
+                    Rectangle {
+                        y: (parent.height - self.height) / 2;
+                        width: 22px; height: 22px;
+                        border-radius: 11px;
+                        background: root.etape == et.cle ? Theme.accent : Theme.surface-3;
+                        Text { text: i + 1; font-size: 11px; font-weight: 600; color: root.etape == et.cle ? Theme.sur-accent : Theme.encre-3; }
+                    }
+                    Text {
+                        text: et.nom;
+                        vertical-alignment: center;
+                        font-family: Theme.police-texte;
+                        font-size: Theme.texte-sm;
+                        font-weight: 600;
+                        letter-spacing: Theme.interlettre;
+                        color: root.etape == et.cle || zone.has-hover ? Theme.encre : Theme.encre-2;
+                    }
+                }
+                zone := TouchArea { mouse-cursor: pointer; clicked => { root.choisir(et.cle); } }
+            }
+        }
+    }
+    // le jeu en cours, a droite ; masque s'il chevaucherait les etapes
+    Text {
+        x: parent.width - Theme.e-lg - self.width;
+        width: min(self.preferred-width, parent.width - Theme.e-lg - (rangee.x + rangee.width) - Theme.e-lg);
+        visible: self.width > 60px;
+        text: root.fil;
+        horizontal-alignment: right;
+        overflow: elide;
+        font-family: Theme.police-texte;
+        font-size: Theme.texte-sm;
+        letter-spacing: Theme.interlettre;
+        color: Theme.encre-3;
+    }
+}
+
+// ---------- Barre du bas d'un ecran outil : Retour a gauche, titre au centre ----------
+// meme place et meme hauteur que les etapes Donnees · Modele · Resultats
+export component BarreOutil inherits Rectangle {
+    in property <string> titre;
+    in property <string> retour: "Retour à l’étude";
+    callback retourner();
+    height: 61px;
+    background: Theme.surface-1;
+    Rectangle { height: 1px; y: 0; background: Theme.filet; }
+    retour := Bouton {
+        x: Theme.e-md;
+        y: (parent.height - self.height) / 2;
+        genre: "fantome"; icone: Icones.retour; texte: root.retour;
+        clic => { root.retourner(); }
+    }
+    Titre {
+        width: min(self.preferred-width, parent.width - 2 * (retour.x + retour.width + Theme.e-md));
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        text: root.titre;
+        corps: Theme.texte-lg;
+        horizontal-alignment: center;
+        wrap: no-wrap;
+        overflow: elide;
+    }
+}
+
+// ---------- Tableau des experiences (ecran Experiences) ----------
+export component TableauExperiences inherits VerticalLayout {
+    in property <[Experience]> experiences;
+    in property <int> courante: -1;
+    in-out property <int> reference: 0;
+    callback ouvrir(int);
+    property <Experience> ref: experiences[reference];
+    property <length> l-ref: 48px;
+    property <length> l-score: 90px;
+    property <length> l-ouvrir: 96px;
+    property <length> utile: max(0px, root.width - 24px - 6 * 12px - l-ref - l-score - l-ouvrir);
+    property <length> l-exp: utile * 3 / 11;
+    property <length> l-don: utile * 2 / 11;
+    property <length> l-proto: utile * 3 / 11;
+    property <length> l-comp: utile * 3 / 11;
+    pure function comparaison(x: Experience, k: int) -> string {
+        if (k == reference) { return "référence"; }
+        if (x.cle-protocole == ref.cle-protocole) { return "directe · mêmes données, même partage"; }
+        if (x.cle-donnees == ref.cle-donnees) { return "indirecte · autre partage"; }
+        "indirecte · autres données"
+    }
+    // en-tete
+    HorizontalLayout {
+        padding-left: 12px; padding-right: 12px; height: 38px; spacing: 12px;
+        Note { width: root.l-ref; text: "Réf."; vertical-alignment: center; font-size: Theme.texte-xs; font-weight: 600; }
+        Note { preferred-width: root.l-exp; min-width: 0px; horizontal-stretch: 0; text: "Expérience"; vertical-alignment: center; font-size: Theme.texte-xs; font-weight: 600; }
+        Note { preferred-width: root.l-don; min-width: 0px; horizontal-stretch: 0; text: "Données"; vertical-alignment: center; font-size: Theme.texte-xs; font-weight: 600; }
+        Note { preferred-width: root.l-proto; min-width: 0px; horizontal-stretch: 0; text: "Protocole"; vertical-alignment: center; font-size: Theme.texte-xs; font-weight: 600; }
+        Note { width: root.l-score; text: "Score test"; vertical-alignment: center; font-size: Theme.texte-xs; font-weight: 600; }
+        Note { preferred-width: root.l-comp; min-width: 0px; horizontal-stretch: 0; text: "Comparaison"; vertical-alignment: center; font-size: Theme.texte-xs; font-weight: 600; }
+        Rectangle { width: root.l-ouvrir; }
+    }
+    Rectangle { height: 1px; background: Theme.filet; }
+    for x[k] in root.experiences: Rectangle {
+        min-height: 56px;
+        background: k == root.courante ? Theme.accent-doux : transparent;
+        Rectangle { y: parent.height - 1px; height: 1px; background: Theme.filet; visible: k < root.experiences.length - 1; }
+        HorizontalLayout {
+            padding-left: 12px; padding-right: 12px; spacing: 12px;
+            Rectangle {
+                width: root.l-ref;
+                accessible-role: checkbox;
+                accessible-label: "Prendre " + x.titre + " comme référence";
+                accessible-checked: k == root.reference;
+                Rectangle {
+                    x: 0; width: 18px; height: 18px; border-radius: 9px;
+                    border-width: 2px;
+                    border-color: k == root.reference ? Theme.accent-texte : Theme.filet-fort;
+                    Rectangle { width: 8px; height: 8px; border-radius: 4px; background: Theme.accent-texte; visible: k == root.reference; }
+                }
+                TouchArea { mouse-cursor: pointer; clicked => { root.reference = k; } }
+            }
+            Text { preferred-width: root.l-exp; min-width: 0px; horizontal-stretch: 0; text: x.titre; vertical-alignment: center; wrap: word-wrap; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+            Corps { preferred-width: root.l-don; min-width: 0px; horizontal-stretch: 0; text: x.jeu-nom; vertical-alignment: center; font-size: Theme.texte-sm; }
+            Corps { preferred-width: root.l-proto; min-width: 0px; horizontal-stretch: 0; text: x.protocole-nom; vertical-alignment: center; font-size: Theme.texte-sm; }
+            Text { width: root.l-score; text: x.score; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+            Rectangle {
+                preferred-width: root.l-comp; min-width: 0px; horizontal-stretch: 0;
+                Badge {
+                    x: 0;
+                    texte: root.comparaison(x, k);
+                    genre: k == root.reference ? "accent" : x.cle-protocole == root.ref.cle-protocole ? "succes" : "alerte";
+                }
+            }
+            Rectangle { width: root.l-ouvrir; Bouton { x: 0; texte: "Ouvrir"; clic => { root.ouvrir(k); } } }
+        }
+    }
+}
+
+// ---------- Dialogue au-dessus de l'ecran courant (Echap ou clic sur le voile pour fermer) ----------
+export component CadreDialogue inherits Rectangle {
+    in property <string> titre;
+    callback fermer();
+    background: Theme.voile-dialogue;
+    TouchArea { clicked => { root.fermer(); } }
+    boite := Rectangle {
+        width: min(880px, root.width - 2 * Theme.e-lg);
+        height: min(corps.preferred-height + 66px, root.height - 2 * Theme.e-lg);
+        background: Theme.surface-1;
+        border-width: 1px;
+        border-color: Theme.filet-fort;
+        border-radius: Theme.r-xl;
+        drop-shadow-blur: 32px;
+        drop-shadow-offset-y: 12px;
+        drop-shadow-color: Theme.ombre;
+        clip: true;
+        accessible-role: groupbox;
+        accessible-label: root.titre;
+        TouchArea { }   // un clic dans la boite ne la ferme pas
+        VerticalLayout {
+            HorizontalLayout {
+                height: 66px;
+                padding-left: Theme.e-lg; padding-right: Theme.e-md;
+                Titre { vertical-alignment: center; text: root.titre; }
+                Rectangle { horizontal-stretch: 1; }
+                BoutonIcone { y: (parent.height - self.height) / 2; trace: Icones.croix; info: "Fermer (Échap)"; clic => { root.fermer(); } }
+            }
+            Rectangle { height: 1px; background: Theme.filet; }
+            Defilement {
+                fond: Theme.surface-1;   // fondu des bords dans la couleur du conteneur
+                width: boite.width;   // largeur imposee : le contenu suit la boite, jamais l'inverse
+                content-width: self.width;
+                content-height: corps.preferred-height;
+                corps := VerticalLayout {
+                    padding: Theme.e-lg;
+                    @children
+                }
+            }
+        }
+    }
+}
+
+// ---------- Toast : message bref, en bas au centre ----------
+export component Toast inherits Rectangle {
+    in property <string> texte;
+    height: 40px;
+    width: min(libelle.preferred-width + 32px, 720px);
+    border-radius: self.height / 2;
+    background: Theme.surface-3;
+    border-width: 1px;
+    border-color: Theme.filet-fort;
+    drop-shadow-blur: 32px;
+    drop-shadow-offset-y: 12px;
+    drop-shadow-color: Theme.ombre;
+    libelle := Text {
+        text: root.texte;
+        overflow: elide;
+        width: parent.width - 32px;
+        horizontal-alignment: center;
+        font-family: Theme.police-texte;
+        font-size: Theme.texte-sm;
+        letter-spacing: Theme.interlettre;
+        color: Theme.encre;
+    }
+}

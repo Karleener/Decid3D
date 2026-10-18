@@ -1,0 +1,262 @@
+// Ecran d'accueil plein ecran : marque, deux entrees, ouvrir un projet.
+import { Theme, CadreFenetre } from "theme.slint";
+import { Icone, Icones } from "icones.slint";
+import { Signature, Bascules } from "composants.slint";
+
+// Halo : disque en degrade radial centre sur (cx, cy), du plein vers le transparent
+component Halo inherits Rectangle {
+    in property <length> cx;
+    in property <length> cy;
+    in property <length> rayon;
+    in property <color> couleur;
+    in property <float> milieu: 0.45;   // opacite relative a mi-rayon
+    x: cx - rayon;
+    y: cy - rayon;
+    width: rayon * 2;
+    height: rayon * 2;
+    background: @radial-gradient(circle, couleur 0%, couleur.with-alpha(couleur.to-hsv().alpha * milieu) 32%, transparent 70%);
+}
+
+// Fond de marque : sombre = Deep Anchor -> prune -> Oxide Crimson, halos cramoisi et lin ; clair = lin, halos nuit et cramoisi
+component FondAccueil inherits Rectangle {
+    background: Theme.sombre
+        ? @linear-gradient(180deg, Theme.anchor-deep 0%, Theme.anchor 38%, Theme.prune 70%, Theme.crimson 100%)
+        : @linear-gradient(180deg, Theme.linen-clair 0%, Theme.linen 100%);
+    clip: true;
+    if Theme.sombre: Halo {
+        cx: parent.width * 0.10; cy: parent.height * 0.60;
+        rayon: max(parent.width, parent.height) * 0.62;
+        couleur: Theme.crimson.with-alpha(0.85);
+    }
+    if Theme.sombre: Halo {
+        cx: parent.width * 0.85; cy: parent.height * 1.15;
+        rayon: max(parent.width, parent.height) * 0.62;
+        couleur: Theme.linen.with-alpha(0.95);
+        milieu: 0.35;
+    }
+    if !Theme.sombre: Halo {
+        cx: parent.width * 0.04; cy: 0;
+        rayon: max(parent.width, parent.height) * 0.55;
+        couleur: Theme.anchor.with-alpha(0.22);
+    }
+    if !Theme.sombre: Halo {
+        cx: parent.width * 0.88; cy: parent.height * 1.08;
+        rayon: max(parent.width, parent.height) * 0.58;
+        couleur: Theme.crimson.with-alpha(0.34);
+    }
+}
+
+// Carte d'entree : icone, titre, texte, pied d'action ; se souleve au survol
+component CarteChoix inherits Rectangle {
+    in property <string> icone;
+    in property <string> titre;
+    in property <string> texte;
+    in property <string> action;
+    callback clic();
+    min-height: 250px;
+    accessible-role: button;
+    accessible-label: titre;
+    accessible-description: texte;
+    forward-focus: focus;
+
+    carte := Rectangle {
+        y: zone.has-hover ? -3px : 0px;
+        animate y { duration: Theme.duree-moyenne; easing: cubic-bezier(0.16, 1, 0.3, 1); }
+        border-radius: Theme.r-xl;
+        background: zone.has-hover ? Theme.accueil-carte-survol : Theme.accueil-carte;
+        animate background { duration: Theme.duree-moyenne; }
+        border-width: focus.has-focus ? 2px : 1px;
+        border-color: focus.has-focus ? Theme.focus : zone.has-hover ? Theme.accueil-bord-fort : Theme.accueil-bord;
+
+        VerticalLayout {
+            padding: Theme.e-xl;
+            spacing: Theme.e-sm;
+            alignment: start;
+            Rectangle {
+                width: 48px; height: 48px;
+                border-radius: 14px;
+                background: Theme.accueil-voile;
+                Icone { width: 24px; height: 24px; trace: root.icone; couleur: Theme.accueil-texte; }
+            }
+            Text {
+                text: root.titre;
+                font-family: Theme.police-titre;
+                font-size: Theme.texte-xl;
+                font-weight: 500;
+                letter-spacing: Theme.facile ? Theme.interlettre : -0.02 * Theme.texte-xl;
+                color: Theme.accueil-texte;
+                wrap: word-wrap;
+            }
+            Text {
+                text: root.texte;
+                width: min(parent.width - 2 * Theme.e-xl, 20.8 * Theme.texte-corps);   // 40 caracteres
+                font-family: Theme.police-texte;
+                font-size: Theme.texte-corps;
+                letter-spacing: Theme.interlettre;
+                color: Theme.accueil-texte-2;
+                wrap: word-wrap;
+            }
+            Rectangle { vertical-stretch: 1; min-height: Theme.e-md; }
+            HorizontalLayout {
+                spacing: Theme.e-xs;
+                alignment: start;
+                Text {
+                    text: root.action;
+                    font-family: Theme.police-texte;
+                    font-size: Theme.texte-corps;
+                    font-weight: 600;
+                    letter-spacing: Theme.interlettre;
+                    color: Theme.accueil-texte;
+                    vertical-alignment: center;
+                }
+                Icone { y: (parent.height - self.height) / 2; trace: Icones.fleche; couleur: Theme.accueil-texte; }
+            }
+        }
+        zone := TouchArea {
+            mouse-cursor: pointer;
+            clicked => { root.clic(); }
+        }
+    }
+    focus := FocusScope {
+        key-pressed(e) => {
+            if (e.text == " " || e.text == "\n") { root.clic(); return accept; }
+            reject
+        }
+    }
+}
+
+// Bouton sur voile (pied de l'accueil)
+component BoutonVoile inherits Rectangle {
+    in property <string> icone;
+    in property <string> texte;
+    callback clic();
+    height: 38px;
+    width: rangee.preferred-width;
+    border-radius: Theme.r-sm;
+    background: zone.has-hover ? Theme.accueil-voile-fort : Theme.accueil-voile;
+    animate background { duration: Theme.duree-courte; }
+    accessible-role: button;
+    accessible-label: texte;
+    rangee := HorizontalLayout {
+        padding-left: Theme.e-md;
+        padding-right: Theme.e-md;
+        spacing: Theme.e-xs;
+        Icone { y: (parent.height - self.height) / 2; width: 18px; height: 18px; trace: root.icone; couleur: Theme.accueil-texte; }
+        Text {
+            text: root.texte;
+            vertical-alignment: center;
+            font-family: Theme.police-texte;
+            font-size: Theme.texte-sm;
+            font-weight: 600;
+            letter-spacing: Theme.interlettre;
+            color: Theme.accueil-texte;
+        }
+    }
+    zone := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clic(); }
+    }
+}
+
+export component Accueil inherits Rectangle {
+    callback decouvrir();
+    callback etude();
+    callback ouvrir-projet();
+    callback preferences-changees();
+
+    FondAccueil { }
+
+    VerticalLayout {
+        padding-top: Theme.e-lg;
+        padding-bottom: Theme.e-lg;
+        padding-left: Theme.e-2xl;
+        padding-right: Theme.e-2xl;
+
+        // haut : marque et bascules
+        HorizontalLayout {
+            Signature { couleur: Theme.accueil-texte; }
+            Rectangle { horizontal-stretch: 1; }
+            Bascules {
+                encre: Theme.accueil-texte-2;
+                encre-active: Theme.accueil-texte;
+                voile: Theme.accueil-voile;
+                voile-fort: Theme.accueil-voile-fort;
+                preferences-changees => { root.preferences-changees(); }
+            }
+            Rectangle { width: max(0px, CadreFenetre.largeur-commandes - Theme.e-2xl + Theme.e-md); }   // boutons de la fenetre
+        }
+
+        // centre : promesse et deux entrees, largeur bornee a 1080 px
+        Rectangle { vertical-stretch: 1; min-height: Theme.e-2xl; }
+        HorizontalLayout {
+            alignment: center;
+            VerticalLayout {
+                width: min(1080px, root.width - 2 * Theme.e-2xl);
+                spacing: Theme.e-2xl;
+                VerticalLayout {
+                    spacing: Theme.e-md;
+                    Text {
+                        text: "Voir une machine apprendre à décider.";
+                        width: min(parent.width, 10.4 * Theme.texte-hero);   // 16 caracteres environ
+                        font-family: Theme.police-titre;
+                        font-size: Theme.texte-hero;
+                        font-weight: 500;
+                        letter-spacing: Theme.facile ? Theme.interlettre : -0.035 * Theme.texte-hero;
+                        color: Theme.accueil-texte;
+                        wrap: word-wrap;
+                    }
+                    Text {
+                        text: "Chargez des données, entraînez un classifieur et regardez sa frontière se former, de l’intérieur.";
+                        width: min(parent.width, 28.8 * Theme.texte-md);
+                        font-family: Theme.police-texte;
+                        font-size: Theme.texte-md;
+                        letter-spacing: Theme.interlettre;
+                        color: Theme.accueil-texte-2;
+                        wrap: word-wrap;
+                    }
+                }
+                HorizontalLayout {
+                    spacing: Theme.e-lg;
+                    CarteChoix {
+                        horizontal-stretch: 1;
+                        icone: Icones.graine;
+                        titre: "Je découvre";
+                        texte: "Des expériences prêtes à lancer. Vous pariez sur le résultat, vous lancez, vous comprenez.";
+                        action: "Commencer";
+                        clic => { root.decouvrir(); }
+                    }
+                    CarteChoix {
+                        horizontal-stretch: 1;
+                        icone: Icones.fiole;
+                        titre: "Je mène une étude";
+                        texte: "Tous les jeux de données, les 7 familles d’algorithmes, chaque paramètre expliqué, la 2D, la 3D et la comparaison.";
+                        action: "Ouvrir l’espace d’étude";
+                        clic => { root.etude(); }
+                    }
+                }
+            }
+        }
+        Rectangle { vertical-stretch: 1; min-height: Theme.e-2xl; }
+
+        // bas : a quoi sert Decid, ouvrir un projet
+        HorizontalLayout {
+            spacing: Theme.e-md;
+            Text {
+                horizontal-stretch: 1;
+                text: "Comprendre, entraîner et comparer des classifieurs : en cours, en TP ou sur vos propres données.";
+                vertical-alignment: center;
+                font-family: Theme.police-texte;
+                font-size: Theme.texte-sm;
+                letter-spacing: Theme.interlettre;
+                color: Theme.accueil-texte-2;
+                wrap: word-wrap;
+            }
+            BoutonVoile {
+                horizontal-stretch: 0;
+                icone: Icones.dossier;
+                texte: "Ouvrir un projet…";
+                clic => { root.ouvrir-projet(); }
+            }
+        }
+    }
+}

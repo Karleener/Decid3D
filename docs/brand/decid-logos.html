@@ -1,0 +1,340 @@
+<title>Pistes logo Decid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Manrope:wght@600&family=Sora:wght@500;600&display=swap">
+<style>
+  /* Planche fixe sur ivoire (demande explicite) : vue comparative des 12 symboles, puis une carte par piste. */
+  :root {
+    --navy: #151946;
+    --oxide: #7C170D;
+    --ivory: #EBE1D5;
+    --ink-soft: #151946b3;
+    --line: #1519461f;
+    --ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+    --sora: "Sora", "Segoe UI", system-ui, sans-serif;
+    --manrope: "Manrope", "Segoe UI", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  body { background: var(--ivory); color: var(--navy); font-family: var(--ui); }
+  .page { max-width: 1240px; margin: 0 auto; padding-block: 48px 64px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+  header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
+  header p { margin: 0; color: var(--ink-soft); font-size: 14px; max-width: 62ch; line-height: 1.5; }
+  .swatches { display: flex; gap: 10px; }
+  .sw { display: flex; align-items: center; gap: 8px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+  .sw i { width: 22px; height: 22px; border-radius: 50%; display: block; box-shadow: inset 0 0 0 1px var(--line); }
+
+  h2.section { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; margin: 44px 0 4px; }
+  .section-note { margin: 0 0 8px; font-size: 13.5px; color: var(--ink-soft); }
+
+  /* Vue comparative */
+  .overview { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 16px; }
+  @media (max-width: 900px) { .overview { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .overview { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .ov { background: var(--ivory); padding: 16px 10px 12px; display: grid; justify-items: center; gap: 10px; text-decoration: none; color: inherit; min-width: 0; }
+  .ov:hover, .ov:focus-visible { background: #e3d7c9; outline: none; }
+  .ov .big { width: 64px; height: 64px; }
+  .ov .smalls { display: flex; gap: 8px; align-items: center; }
+  .ov .smalls svg:first-child { width: 24px; height: 24px; }
+  .ov .smalls svg:last-child { width: 16px; height: 16px; }
+  .ov span { font-size: 11.5px; font-weight: 600; text-align: center; }
+  .ov span b { color: var(--oxide); margin-right: 4px; font-variant-numeric: tabular-nums; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .card { padding: 28px 24px 32px; border-bottom: 1px solid var(--line); display: grid; gap: 20px; align-content: start; min-width: 0; scroll-margin-top: 16px; }
+  .card + .card { border-left: 1px solid var(--line); }
+  @media (min-width: 1001px) { .card:nth-child(3n+1) { border-left: 0; } }
+  @media (max-width: 1000px) and (min-width: 641px) { .card:nth-child(2n+1) { border-left: 0; } }
+  @media (max-width: 640px) { .card + .card { border-left: 0; } .card { padding-inline: 0; } }
+
+  .head { display: flex; gap: 14px; align-items: baseline; }
+  .num { font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .dir { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oxide); font-weight: 700; }
+  .name { font-size: 17px; font-weight: 700; margin: 2px 0 0; letter-spacing: -0.01em; }
+  .idea { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+
+  .icon-panel { background: var(--navy); border-radius: 6px; padding: 26px 22px; display: flex; align-items: center; gap: 22px; }
+  .tile { width: 112px; height: 112px; border-radius: 26px; background: var(--ivory); display: grid; place-items: center; flex: none; }
+  .tile svg { width: 78px; height: 78px; }
+  .sizes { display: flex; align-items: end; gap: 14px; }
+  .sizes figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
+  .sizes figcaption { font-size: 10px; color: #EBE1D599; font-variant-numeric: tabular-nums; }
+  .t32 { width: 32px; height: 32px; border-radius: 8px; background: var(--ivory); display: grid; place-items: center; }
+  .t32 svg { width: 23px; height: 23px; }
+  .t24 { width: 24px; height: 24px; border-radius: 6px; background: var(--ivory); display: grid; place-items: center; }
+  .t24 svg { width: 17px; height: 17px; }
+
+  .sig { display: flex; align-items: center; gap: 12px; padding: 18px 4px; }
+  .sig svg { width: 46px; height: 46px; flex: none; }
+  .word { font-size: 38px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; padding-bottom: 3px; }
+  .f-sora .word { font-family: var(--sora); letter-spacing: -0.045em; }
+  .f-manrope .word { font-family: var(--manrope); letter-spacing: -0.035em; }
+
+  .mono { display: flex; gap: 10px; align-items: stretch; }
+  .mono > div { flex: 1; display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 6px; min-width: 0; }
+  .mono svg { width: 26px; height: 26px; flex: none; }
+  .mono .word { font-size: 21px; padding-bottom: 1px; }
+  .m-light { box-shadow: inset 0 0 0 1px var(--line); color: var(--navy); --a: var(--navy); --b: var(--navy); --c: transparent; }
+  .m-dark { background: var(--navy); color: var(--ivory); --a: var(--ivory); --b: var(--ivory); --c: transparent; }
+  .label { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; margin-bottom: -10px; }
+
+  /* Couleurs du symbole : --a principal, --b accent, --c remplissage retiré en une couleur */
+  .color { --a: var(--navy); --b: var(--oxide); --c: var(--oxide); }
+
+  .badge { margin-left: auto; align-self: center; background: var(--oxide); color: var(--ivory); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 10px; border-radius: 99px; }
+  .card.kept { box-shadow: inset 0 0 0 2px var(--oxide); }
+  .ov.kept { box-shadow: inset 0 0 0 2px var(--oxide); }
+  footer { margin-top: 32px; font-size: 13px; color: var(--ink-soft); line-height: 1.6; max-width: 80ch; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Série 1 -->
+    <clipPath id="c1a"><polygon points="-10,-10 110,-10 110,4 -10,94.7"/></clipPath>
+    <clipPath id="c1b"><polygon points="-10,103.5 110,12.8 110,110 -10,110"/></clipPath>
+    <symbol id="m1" viewBox="0 0 100 100">
+      <path clip-path="url(#c1a)" style="fill:var(--a)" d="M16 12H48A38 38 0 0 1 48 88H16Z"/>
+      <path clip-path="url(#c1b)" style="fill:var(--b)" d="M16 12H48A38 38 0 0 1 48 88H16Z"/>
+    </symbol>
+    <clipPath id="c2a"><path d="M-2 66.5C38 74.5 48 26.5 102 24.5V-2H-2Z"/></clipPath>
+    <clipPath id="c2b"><path d="M-2 73.5C38 81.5 48 33.5 102 31.5V102H-2Z"/></clipPath>
+    <symbol id="m2" viewBox="0 0 100 100">
+      <path clip-path="url(#c2a)" fill-rule="evenodd" style="fill:var(--a)" d="M26 10H74A16 16 0 0 1 90 26V74A16 16 0 0 1 74 90H26A16 16 0 0 1 10 74V26A16 16 0 0 1 26 10ZM21 32a9 9 0 1 0 18 0a9 9 0 1 0 -18 0ZM61 68a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z"/>
+      <path clip-path="url(#c2b)" fill-rule="evenodd" style="fill:var(--b)" d="M26 10H74A16 16 0 0 1 90 26V74A16 16 0 0 1 74 90H26A16 16 0 0 1 10 74V26A16 16 0 0 1 26 10ZM21 32a9 9 0 1 0 18 0a9 9 0 1 0 -18 0ZM61 68a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z"/>
+    </symbol>
+    <symbol id="m3" viewBox="0 0 100 100">
+      <g transform="translate(5 0)">
+        <rect x="12" y="12" width="22" height="22" rx="3" style="fill:var(--a)"/>
+        <rect x="12" y="39" width="22" height="22" rx="3" style="fill:var(--a)"/>
+        <rect x="12" y="66" width="22" height="22" rx="3" style="fill:var(--a)"/>
+        <path d="M40 12A38 38 0 0 1 40 88Z" style="fill:var(--b)"/>
+      </g>
+    </symbol>
+    <symbol id="m4" viewBox="0 0 100 100">
+      <circle cx="29" cy="29" r="19" style="fill:var(--a)"/>
+      <rect x="52" y="10" width="38" height="38" rx="11" style="fill:var(--a)"/>
+      <rect x="10" y="52" width="38" height="38" rx="11" style="fill:var(--a)"/>
+      <rect x="52" y="52" width="38" height="38" rx="1.5" style="fill:var(--b)"/>
+    </symbol>
+    <symbol id="m5" viewBox="0 0 100 100">
+      <path fill-rule="evenodd" style="fill:var(--a)" d="M12 10H50A40 40 0 0 1 50 90H12ZM32 30L64 22V70L32 78Z"/>
+      <path style="fill:var(--c)" d="M37 33.9L59 28.4V66.1L37 71.6Z"/>
+    </symbol>
+    <clipPath id="c6a"><rect x="0" y="0" width="100" height="46.5"/></clipPath>
+    <clipPath id="c6b"><rect x="0" y="53.5" width="100" height="47"/></clipPath>
+    <symbol id="m6" viewBox="0 0 100 100">
+      <path clip-path="url(#c6a)" fill-rule="evenodd" style="fill:var(--a)" d="M14 8H50A42 42 0 0 1 50 92H14ZM34 28H50A22 22 0 0 1 50 72H34Z"/>
+      <path clip-path="url(#c6b)" fill-rule="evenodd" style="fill:var(--b)" d="M14 8H43.5A34.4 42 0 0 1 43.5 92H14ZM30.4 28H43.5A18 22 0 0 1 43.5 72H30.4Z"/>
+    </symbol>
+
+    <!-- Série 2 -->
+    <symbol id="m7" viewBox="0 0 100 100">
+      <path style="fill:var(--a)" d="M47 8A36 36 0 0 0 47 80Z"/>
+      <path style="fill:var(--b)" d="M53 20A36 36 0 0 1 53 92Z"/>
+    </symbol>
+    <mask id="k8" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="#fff"/>
+      <path d="M34 76C50 76 54 24 66 24C78 24 80 76 96 76Z" fill="#000" stroke="#000" stroke-width="9" stroke-linejoin="round"/>
+    </mask>
+    <symbol id="m8" viewBox="0 0 100 100">
+      <path mask="url(#k8)" style="fill:var(--a)" d="M4 76C20 76 22 24 34 24C46 24 50 76 66 76Z"/>
+      <path style="fill:var(--b)" d="M34 76C50 76 54 24 66 24C78 24 80 76 96 76Z"/>
+    </symbol>
+    <symbol id="m9" viewBox="0 0 100 100">
+      <rect x="8" y="8" width="24" height="24" rx="4" style="fill:var(--a)"/>
+      <rect x="38" y="8" width="24" height="24" rx="4" style="fill:var(--a)"/>
+      <rect x="68" y="8" width="24" height="24" rx="4" style="fill:var(--a)"/>
+      <rect x="8" y="38" width="24" height="24" rx="4" style="fill:var(--a)"/>
+      <circle cx="50" cy="50" r="12" style="fill:var(--a)"/>
+      <rect x="68" y="38" width="24" height="24" rx="4" style="fill:var(--b)"/>
+      <rect x="8" y="68" width="24" height="24" rx="4" style="fill:var(--a)"/>
+      <rect x="38" y="68" width="24" height="24" rx="4" style="fill:var(--b)"/>
+      <rect x="68" y="68" width="24" height="24" rx="4" style="fill:var(--b)"/>
+    </symbol>
+    <symbol id="m10" viewBox="0 0 100 100">
+      <circle cx="40" cy="60" r="26" style="fill:var(--b)"/>
+      <rect x="72" y="10" width="15" height="80" rx="7.5" style="fill:var(--a)"/>
+    </symbol>
+    <symbol id="m11" viewBox="0 0 100 100">
+      <g transform="translate(0 3)">
+        <polygon points="50,5.9 81.3,24 50,42.1 18.7,24" style="fill:var(--b)"/>
+        <polygon points="83.9,33.4 83.9,69.5 52.5,87.6 52.5,51.5" style="fill:var(--a)"/>
+        <polygon points="16.1,33.4 47.5,51.5 47.5,87.6 16.1,69.5" style="fill:var(--a)"/>
+      </g>
+    </symbol>
+    <symbol id="m12" viewBox="0 0 100 100">
+      <path style="fill:var(--a)" d="M12 12H44V56H88V88H12Z"/>
+      <polygon points="50,12 88,50 50,50" style="fill:var(--b)"/>
+    </symbol>
+
+    <!-- Série 3 · deux plans et des points (isométrie 2:1) -->
+    <mask id="k13" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="#fff"/>
+      <polygon points="26,40 56,25 86,40 56,55" fill="#000" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+    </mask>
+    <symbol id="m13" viewBox="0 0 100 100">
+      <circle cx="24.5" cy="26.3" r="5.5" style="fill:var(--b)"/>
+      <circle cx="35.2" cy="20.9" r="5.5" style="fill:var(--b)"/>
+      <circle cx="45.9" cy="15.5" r="5.5" style="fill:var(--b)"/>
+      <polygon points="26,40 56,25 86,40 56,55" style="fill:var(--b)"/>
+      <polygon mask="url(#k13)" points="14,62 44,47 74,62 44,77" style="fill:var(--a)"/>
+      <circle cx="54.1" cy="86.5" r="5.5" style="fill:var(--a)"/>
+      <circle cx="64.8" cy="81.1" r="5.5" style="fill:var(--a)"/>
+      <circle cx="75.5" cy="75.7" r="5.5" style="fill:var(--a)"/>
+    </symbol>
+    <symbol id="m14" viewBox="0 0 100 100">
+      <g transform="translate(0 3)">
+        <circle cx="56" cy="11" r="8" style="fill:var(--b)"/>
+        <polygon points="26,40 56,25 86,40 56,55" style="fill:var(--b)"/>
+        <polygon mask="url(#k13)" points="14,62 44,47 74,62 44,77" style="fill:var(--a)"/>
+      </g>
+    </symbol>
+    <!-- Série 4 · La marge courbe retravaillée -->
+    <clipPath id="fAa"><path d="M-2 68C20 70 30 54 44 52C60 50 62 26 102 22V-2H-2Z"/></clipPath>
+    <clipPath id="fAb"><path d="M-2 76C20 78 30 62 44 60C60 58 62 34 102 30V102H-2Z"/></clipPath>
+    <clipPath id="fBa"><path d="M-2 66C30 72 50 26 102 26V-2H-2Z"/></clipPath>
+    <clipPath id="fBb"><path d="M-2 74C30 80 50 34 102 34V102H-2Z"/></clipPath>
+    <symbol id="m15" viewBox="0 0 100 100">
+      <path clip-path="url(#fAa)" fill-rule="evenodd" style="fill:var(--a)" d="M26 10H74A16 16 0 0 1 90 26V74A16 16 0 0 1 74 90H26A16 16 0 0 1 10 74V26A16 16 0 0 1 26 10ZM19 32a11 11 0 1 0 22 0a11 11 0 1 0 -22 0ZM59 70a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+      <path clip-path="url(#fAb)" fill-rule="evenodd" style="fill:var(--b)" d="M26 10H74A16 16 0 0 1 90 26V74A16 16 0 0 1 74 90H26A16 16 0 0 1 10 74V26A16 16 0 0 1 26 10ZM19 32a11 11 0 1 0 22 0a11 11 0 1 0 -22 0ZM59 70a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+    </symbol>
+    <symbol id="m16" viewBox="0 0 100 100">
+      <path clip-path="url(#fBa)" fill-rule="evenodd" style="fill:var(--a)" d="M26 10H74A16 16 0 0 1 90 26V74A16 16 0 0 1 74 90H26A16 16 0 0 1 10 74V26A16 16 0 0 1 26 10ZM51 61a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+      <path clip-path="url(#fBb)" fill-rule="evenodd" style="fill:var(--b)" d="M26 10H74A16 16 0 0 1 90 26V74A16 16 0 0 1 74 90H26A16 16 0 0 1 10 74V26A16 16 0 0 1 26 10ZM51 61a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+    </symbol>
+    <symbol id="m17" viewBox="0 0 100 100">
+      <path clip-path="url(#fBa)" fill-rule="evenodd" style="fill:var(--a)" d="M10 50A40 40 0 1 0 90 50A40 40 0 1 0 10 50ZM22 34a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM56 68a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+      <path clip-path="url(#fBb)" fill-rule="evenodd" style="fill:var(--b)" d="M10 50A40 40 0 1 0 90 50A40 40 0 1 0 10 50ZM22 34a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM56 68a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+    </symbol>
+    <symbol id="m18" viewBox="0 0 100 100">
+      <path clip-path="url(#fBa)" fill-rule="evenodd" style="fill:var(--a)" d="M14 10H50A40 40 0 0 1 50 90H14ZM24 32a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM58 66a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+      <path clip-path="url(#fBb)" fill-rule="evenodd" style="fill:var(--b)" d="M14 10H50A40 40 0 0 1 50 90H14ZM24 32a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM58 66a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+    </symbol>
+    <!-- Série 5 · D, fente droite, un seul point -->
+    <clipPath id="c21a"><polygon points="-10,-10 110,-10 110,26.1 -10,77.5"/></clipPath>
+    <clipPath id="c21b"><polygon points="-10,84.7 110,33.3 110,110 -10,110"/></clipPath>
+    <symbol id="m19" viewBox="0 0 100 100">
+      <path clip-path="url(#c1a)" fill-rule="evenodd" style="fill:var(--a)" d="M16 12H48A38 38 0 0 1 48 88H16ZM26 36a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+      <path clip-path="url(#c1b)" fill-rule="evenodd" style="fill:var(--b)" d="M16 12H48A38 38 0 0 1 48 88H16ZM26 36a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+    </symbol>
+    <symbol id="m20" viewBox="0 0 100 100">
+      <path clip-path="url(#c1a)" fill-rule="evenodd" style="fill:var(--a)" d="M16 12H48A38 38 0 0 1 48 88H16ZM55 66a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z"/>
+      <path clip-path="url(#c1b)" fill-rule="evenodd" style="fill:var(--b)" d="M16 12H48A38 38 0 0 1 48 88H16ZM55 66a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z"/>
+    </symbol>
+    <symbol id="m21" viewBox="0 0 100 100">
+      <path clip-path="url(#c21a)" fill-rule="evenodd" style="fill:var(--a)" d="M16 12H48A38 38 0 0 1 48 88H16ZM28 36a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+      <path clip-path="url(#c21b)" fill-rule="evenodd" style="fill:var(--b)" d="M16 12H48A38 38 0 0 1 48 88H16ZM28 36a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z"/>
+    </symbol>
+    <symbol id="m22" viewBox="0 0 100 100">
+      <path clip-path="url(#c1a)" fill-rule="evenodd" style="fill:var(--a)" d="M16 12H48A38 38 0 0 1 48 88H16ZM25 36a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+      <path clip-path="url(#c1b)" fill-rule="evenodd" style="fill:var(--b)" d="M16 12H48A38 38 0 0 1 48 88H16ZM25 36a11 11 0 1 0 22 0a11 11 0 1 0 -22 0Z"/>
+      <circle cx="36" cy="36" r="6.5" style="fill:var(--c)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <header>
+    <div>
+      <h1>Decid · pistes de logo</h1>
+      <p>Vingt-deux propositions en cinq séries. Le logo retenu est la piste 22, encadrée en rouge dans la série 5. La vue d’ensemble les montre côte à côte, en grand et à 24 et 16 px. Cliquez sur un symbole pour voir sa fiche complète : icône d’application, signature et version une couleur.</p>
+    </div>
+    <div class="swatches">
+      <span class="sw"><i style="background:var(--navy)"></i>#151946</span>
+      <span class="sw"><i style="background:var(--oxide)"></i>#7C170D</span>
+      <span class="sw"><i style="background:var(--ivory)"></i>#EBE1D5</span>
+    </div>
+  </header>
+
+  <h2 class="section">Vue d’ensemble</h2>
+  <p class="section-note">Pour choisir, regardez d’abord la ligne du bas de chaque case : un bon symbole reste reconnaissable à 16 px.</p>
+  <nav class="overview color" id="overview" aria-label="Les douze symboles"></nav>
+
+  <h2 class="section">Série 5 · Direction retenue : le D, une fente droite, un seul point</h2>
+  <p class="section-note">La construction de la piste 1 avec l’idée de la piste 18. Les quatre variantes ne diffèrent que par la place du point et l’angle de la fente.</p>
+  <div class="grid" id="s5"></div>
+
+  <h2 class="section">Série 4 · La marge courbe, retravaillée</h2>
+  <p class="section-note">Quatre variantes de la piste 2 : une frontière moins symétrique, des points plus gros, et trois contours différents.</p>
+  <div class="grid" id="s4"></div>
+
+  <h2 class="section">Série 3 · Votre piste, épurée</h2>
+  <p class="section-note">Deux plans superposés et des points répartis de chaque côté, redessinés sur une grille isométrique, sans chevauchement.</p>
+  <div class="grid" id="s3"></div>
+
+  <h2 class="section">Série 1 · Frontière, structure, monogramme D</h2>
+  <main class="grid" id="s1"></main>
+
+  <h2 class="section">Série 2 · Nouvelles orientations</h2>
+  <div class="grid" id="s2"></div>
+
+  <footer>
+    Typographies de signature : Manrope SemiBold (série 1), Instrument Sans SemiBold, une grotesque précise (pistes 7, 9, 11), et Sora SemiBold, plus ronde et plus accueillante (pistes 8, 10, 12). La typographie se choisit indépendamment du symbole.
+    Tous les symboles sont dessinés sur une grille de 100 unités, en aplats, avec des écarts d’au moins 6 unités. En version une couleur, les séparations restent des vides réels.
+  </footer>
+</div>
+
+<script>
+  const tracks = [
+    { font: "f-manrope", dir: "Frontière de décision", name: "La coupe", idea: "Un D plein traversé par une frontière linéaire. Deux classes, une séparation nette, rien d’autre." },
+    { font: "f-manrope", dir: "Frontière de décision", name: "La marge courbe", idea: "Un plan de données carré divisé par une frontière non linéaire. Une observation de chaque côté, creusée dans la matière." },
+    { font: "f-manrope", dir: "Des données à la structure", name: "L’assemblage", idea: "Trois unités empilées et un demi-disque composent le D. Les données isolées deviennent une lettre." },
+    { font: "f-manrope", dir: "Des données à la structure", name: "La mise en forme", idea: "Quatre éléments passent du cercle au carré en diagonale. Le dernier, ordonné, prend l’accent." },
+    { font: "f-manrope", dir: "Monogramme D", name: "Le plan incliné", idea: "La contre-forme du D est un plan vu en perspective. On passe d’une lettre plate à un espace en 3D." },
+    { font: "f-manrope", dir: "Monogramme D", name: "La rotation", idea: "Un D en ruban coupé à l’horizontale. La moitié basse est plus étroite, comme si la lettre pivotait sur son axe." },
+    { font: "", dir: "Décision", name: "Le décalage", idea: "Un disque tranché dont les deux moitiés glissent l’une contre l’autre. Une seule coupe suffit à créer deux groupes." },
+    { font: "f-sora", dir: "Distribution", name: "Les deux courbes", idea: "Deux distributions de classes qui se recouvrent. Le vide entre elles marque la zone d’incertitude, là où le modèle doit trancher." },
+    { font: "", dir: "Carte de régions", name: "La grille", idea: "Une carte de décision en pixels, comme celle d’un k plus proches voisins. Le cercle central est l’observation à classer." },
+    { font: "f-sora", dir: "Lettre minuscule", name: "Le point et la règle", idea: "Un « d » minuscule réduit à deux formes : une donnée ronde et une frontière droite. Amical, très lisible en petit." },
+    { font: "", dir: "Passage en 3D", name: "Le volume ouvert", idea: "Un cube isométrique dont la face supérieure se soulève. Il évoque la troisième dimension et le fait de regarder à l’intérieur des données." },
+    { font: "f-sora", dir: "Pédagogie", name: "Le pli", idea: "Une feuille dont le coin se replie. Le plan devient volume, et la page de cours devient manipulation." },
+    { font: "f-sora", dir: "Deux plans", name: "Les strates", idea: "Les points rouges se rangent au-dessus du plan rouge, les points bleus sous le plan bleu. Deux classes, deux niveaux, une symétrie stricte." },
+    { font: "f-sora", dir: "Deux plans", name: "Le point à classer", idea: "La version minimale : les deux plans et un seul point qui arrive. Le plus lisible en icône." },
+    { font: "f-manrope", dir: "Marge courbe · carré", name: "La frontière apprise", idea: "La courbe hésite et change de pente, comme une frontière réellement apprise sur des données. Les deux observations sont deux fois plus grosses que dans la piste 2." },
+    { font: "f-manrope", dir: "Marge courbe · carré", name: "Le cas limite", idea: "Un seul point, posé tout près de la frontière : le cas difficile que le modèle doit trancher. La plus simple des quatre." },
+    { font: "f-manrope", dir: "Marge courbe · cercle", name: "Le disque", idea: "La même frontière dans un cercle. Une seule courbure, pas de S, pour ne pas rappeler le yin-yang. Plus doux et plus accueillant." },
+    { font: "f-manrope", dir: "Marge courbe · D", name: "Le D partagé", idea: "La frontière traverse la lettre D. Le symbole porte à la fois l’initiale et l’idée de classification." },
+    { font: "f-manrope", dir: "Retenue · A", name: "Le point dans sa classe", idea: "Le point est creusé dans la région bleue, loin de la fente. Lecture la plus calme et la plus équilibrée." },
+    { font: "f-manrope", dir: "Retenue · B", name: "Le point près de la frontière", idea: "Le point est dans la région rouge, juste sous la fente. Il raconte le cas limite, celui que le modèle doit trancher." },
+    { font: "f-manrope", dir: "Retenue · C", name: "La fente plus douce", idea: "Même idée que A avec une fente moins inclinée. La région rouge devient plus large et la lettre D se lit mieux." },
+    { font: "f-manrope", dir: "Retenue · D", name: "Le point de l’autre classe", idea: "Un point rouge dans la région bleue : une observation mal classée, l’erreur qui fait apprendre. En une couleur, il redevient un simple creux." }
+  ];
+  const use = (n) => `<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#m${n}"/></svg>`;
+  const card = (t, i) => `
+    <article class="card ${t.font}${i === 21 ? " kept" : ""}" id="p${i + 1}">
+      <div class="head">
+        <span class="num">${i + 1}</span>
+        <div><div class="dir">${t.dir}</div><h3 class="name">${t.name}</h3></div>${i === 21 ? '<span class="badge">Retenu</span>' : ""}
+      </div>
+      <p class="idea">${t.idea}</p>
+      <div class="icon-panel color">
+        <div class="tile">${use(i + 1)}</div>
+        <div class="sizes">
+          <figure><div class="t32">${use(i + 1)}</div><figcaption>32</figcaption></figure>
+          <figure><div class="t24">${use(i + 1)}</div><figcaption>24</figcaption></figure>
+        </div>
+      </div>
+      <div class="label">Signature</div>
+      <div class="sig color">${use(i + 1)}<span class="word">Decid</span></div>
+      <div class="label">Une couleur</div>
+      <div class="mono">
+        <div class="m-light">${use(i + 1)}<span class="word">Decid</span></div>
+        <div class="m-dark">${use(i + 1)}<span class="word">Decid</span></div>
+      </div>
+    </article>`;
+  document.getElementById("overview").innerHTML = tracks.map((t, i) => `
+    <a class="ov${i === 21 ? " kept" : ""}" href="#p${i + 1}">
+      <svg class="big" viewBox="0 0 100 100" aria-hidden="true"><use href="#m${i + 1}"/></svg>
+      <div class="smalls">${use(i + 1)}${use(i + 1)}</div>
+      <span><b>${i + 1}</b>${t.name}</span>
+    </a>`).join("");
+  document.getElementById("s1").innerHTML = tracks.slice(0, 6).map((t, i) => card(t, i)).join("");
+  document.getElementById("s2").innerHTML = tracks.slice(6, 12).map((t, i) => card(t, i + 6)).join("");
+  document.getElementById("s3").innerHTML = tracks.slice(12, 14).map((t, i) => card(t, i + 12)).join("");
+  document.getElementById("s4").innerHTML = tracks.slice(14, 18).map((t, i) => card(t, i + 14)).join("");
+  document.getElementById("s5").innerHTML = tracks.slice(18).map((t, i) => card(t, i + 18)).join("");
+</script>

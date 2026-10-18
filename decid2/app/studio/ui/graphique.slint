@@ -1,0 +1,43 @@
+// Graphique vectoriel : le C++ calcule les traces (chemins SVG dans un repere vb-l x vb-h) et les etiquettes ;
+// Slint les dessine avec les jetons du theme. Proportions fixes (hauteur deduite de la largeur).
+import { Theme } from "theme.slint";
+
+export struct Trace {
+    commandes: string,
+    genre: int,          // 0 courbe accent, 1 courbe grise, 2 bande remplie, 3 axe ou grille, 4 point plein, 5 cercle de mise en avant
+    epaisseur: length,
+}
+export struct Etiquette {
+    x: float,
+    y: float,
+    texte: string,
+    ancre: int,          // 0 debut, 1 milieu, 2 fin
+    fort: bool,
+}
+
+export component Graphique inherits Rectangle {
+    in property <float> vb-l: 640;
+    in property <float> vb-h: 300;
+    in property <[Trace]> traces;
+    in property <[Etiquette]> etiquettes;
+    height: self.width * vb-h / vb-l;
+    for t in root.traces: Path {
+        x: 0; y: 0;
+        width: root.width; height: root.height;
+        viewbox-x: 0; viewbox-y: 0;
+        viewbox-width: root.vb-l; viewbox-height: root.vb-h;
+        commands: t.commandes;
+        stroke: t.genre == 0 ? Theme.accent-texte : t.genre == 1 ? Theme.encre-3 : t.genre == 3 ? Theme.filet-fort : t.genre == 5 ? Theme.encre : transparent;
+        stroke-width: t.genre == 2 || t.genre == 4 ? 0px : t.epaisseur;
+        fill: t.genre == 2 ? Theme.accent-doux : t.genre == 4 ? Theme.accent-texte : transparent;
+    }
+    for e in root.etiquettes: Text {
+        x: e.x / root.vb-l * root.width - (e.ancre == 1 ? self.width / 2 : e.ancre == 2 ? self.width : 0px);
+        y: e.y / root.vb-h * root.height - self.height / 2;
+        text: e.texte;
+        font-family: Theme.police-texte;
+        font-size: Theme.texte-xs;
+        font-weight: e.fort ? 600 : 400;
+        color: e.fort ? Theme.encre : Theme.encre-3;
+    }
+}

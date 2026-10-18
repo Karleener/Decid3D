@@ -1,0 +1,349 @@
+// Contenus des dialogues portes (A propos, Raccourcis clavier) ; les autres arrivent avec leurs ecrans.
+import { Theme } from "theme.slint";
+import { Titre, Corps, Note, Carte, Badge, Bouton, Pilules, Defileur } from "composants.slint";
+import { Icones } from "icones.slint";
+
+component Fait inherits HorizontalLayout {
+    in property <string> cle;
+    in property <string> valeur;
+    spacing: Theme.e-md;
+    padding-top: 6px; padding-bottom: 6px;
+    Note { width: 120px; text: root.cle; }
+    Corps { horizontal-stretch: 1; text: root.valeur; color: Theme.encre; }
+}
+
+export component APropos inherits VerticalLayout {
+    spacing: Theme.e-lg;
+    Carte {
+        height: a.preferred-height;
+        a := HorizontalLayout {
+            padding: Theme.e-lg;
+            spacing: Theme.e-lg;
+            Rectangle {
+                width: 64px; height: 64px;
+                border-radius: 15px;
+                background: Theme.linen;
+                border-width: 1px;
+                border-color: Theme.logo-bord;
+                Image { width: 46px; height: 46px; source: @image-url("marque/decid-symbole-couleur.svg"); }
+            }
+            VerticalLayout {
+                spacing: 6px;
+                alignment: center;
+                Titre { text: "Decid 2"; corps: Theme.texte-xl; }
+                Corps { text: "Refonte pédagogique de Decid 3D : apprendre la classification supervisée en voyant les frontières de décision, en 2D et en 3D."; }
+                Note { text: "Miguel Laleye, Master TSI, 2026"; }
+            }
+        }
+    }
+    Carte {
+        height: b.preferred-height;
+        b := VerticalLayout {
+            padding: Theme.e-lg;
+            spacing: 2px;
+            Titre { text: "Logiciel d’origine"; }
+            Rectangle { height: Theme.e-xs; }
+            Fait { cle: "Logiciel"; valeur: "Decid 3D (version 2025)"; }
+            Fait { cle: "Auteur"; valeur: "Johel Mitéran, Le2i / ImViA"; }
+            Fait { cle: "Copyright"; valeur: "2003-2024"; }
+            Fait { cle: "Usage"; valeur: "Université Bourgogne Europe, Master Traitement du Signal et des Images"; }
+            Rectangle { height: Theme.e-xs; }
+            Note { text: "D’après le README du dépôt (« Introduction to Machine Learning using OpenCV and VTK for 3D visualisation », logiciel destiné à l’enseignement et aux essais) et la boîte « À propos » de Decid 3D."; }
+        }
+    }
+    Carte {
+        height: c.preferred-height;
+        c := VerticalLayout {
+            padding: Theme.e-lg;
+            spacing: 6px;
+            Titre { text: "Interface réalisée avec Slint"; }
+            Corps { text: "L’application Decid 2 utilise la bibliothèque d’interface Slint sous sa licence libre de redevances, qui demande de signaler son usage."; }
+        }
+    }
+    Carte {
+        height: d.preferred-height;
+        d := VerticalLayout {
+            padding: Theme.e-lg;
+            spacing: 2px;
+            Titre { text: "Composants et licences"; }
+            Rectangle { height: Theme.e-xs; }
+            for l in [
+                { nom: "OpenCV 4.10", role: "Apprentissage et calcul du moteur", licence: "Apache 2.0" },
+                { nom: "Slint", role: "Bibliothèque d’interface", licence: "Slint Royalty-free 2.0" },
+                { nom: "Manrope", role: "Police du texte", licence: "SIL Open Font License 1.1" },
+                { nom: "Space Grotesk", role: "Police des titres", licence: "SIL Open Font License 1.1" },
+            ]: HorizontalLayout {
+                spacing: Theme.e-md;
+                padding-top: 8px; padding-bottom: 8px;
+                property <length> reste: max(0px, d.width - 2 * Theme.e-lg - 140px - 200px - 2 * Theme.e-md);
+                Text { width: 140px; text: l.nom; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                Corps { preferred-width: reste; min-width: 0px; horizontal-stretch: 0; text: l.role; font-size: Theme.texte-sm; }
+                Corps { width: 200px; text: l.licence; font-size: Theme.texte-sm; }
+            }
+        }
+    }
+}
+
+// Raccourcis : l'action dans Decid 2, son equivalent dans l'ancien Decid, et s'il est deja branche dans cette version
+export component Raccourcis inherits VerticalLayout {
+    in property <[{touche: string, action: string, ancien: string, actif: bool}]> lignes: [
+        { touche: "F1", action: "Rafraîchir l’affichage", ancien: "Rafraîchir la fenêtre", actif: true },
+        { touche: "F2", action: "Plein écran", ancien: "Agrandir la fenêtre", actif: true },
+        { touche: "F3", action: "Importer un CSV", ancien: "Lire au format CSV", actif: true },
+        { touche: "F4", action: "Entraîner le modèle choisi", ancien: "SVM : apprentissage dynamique", actif: true },
+        { touche: "F5", action: "Pas à pas : une étape", ancien: "Boosting : une itération", actif: true },
+        { touche: "F6", action: "Pas à pas : réinitialiser", ancien: "Boosting : remise à zéro", actif: true },
+        { touche: "Ctrl+N", action: "Nouveau projet", ancien: "Nouveau", actif: true },
+        { touche: "Ctrl+O", action: "Ouvrir un projet (.decid)", ancien: "—", actif: true },
+        { touche: "Ctrl+S", action: "Enregistrer le projet (.decid)", ancien: "—", actif: true },
+        { touche: "Ctrl+Maj+S", action: "Enregistrer le projet sous…", ancien: "—", actif: true },
+        { touche: "Ctrl+Z", action: "Annuler le dernier point (bac à sable)", ancien: "Annuler (aussi Alt+Retour arrière)", actif: true },
+        { touche: "Échap", action: "Fermer les menus et les dialogues", ancien: "—", actif: true },
+    ];
+    spacing: Theme.e-lg;
+    property <length> moitie: max(0px, (t.width - 2 * Theme.e-lg - 110px - 120px - 3 * Theme.e-md) / 2);
+    Carte {
+        height: t.preferred-height;
+        t := VerticalLayout {
+            padding: Theme.e-lg;
+            HorizontalLayout {
+                spacing: Theme.e-md; padding-bottom: 8px;
+                Note { width: 110px; text: "Touche"; font-size: Theme.texte-xs; font-weight: 600; }
+                Note { preferred-width: root.moitie; min-width: 0px; horizontal-stretch: 0; text: "Dans Decid 2"; font-size: Theme.texte-xs; font-weight: 600; }
+                Note { preferred-width: root.moitie; min-width: 0px; horizontal-stretch: 0; text: "Dans l’ancien Decid"; font-size: Theme.texte-xs; font-weight: 600; }
+                Note { width: 120px; text: "Cette version"; font-size: Theme.texte-xs; font-weight: 600; }
+            }
+            Rectangle { height: 1px; background: Theme.filet; }
+            for r in root.lignes: VerticalLayout {
+                HorizontalLayout {
+                    spacing: Theme.e-md; padding-top: 9px; padding-bottom: 9px;
+                    Rectangle {
+                        width: 110px;
+                        Rectangle {
+                            x: 0; height: 24px; width: k.preferred-width + 14px;
+                            border-radius: 6px; background: Theme.surface-3;
+                            border-width: 1px; border-color: Theme.filet;
+                            k := Text { text: r.touche; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.encre; }
+                        }
+                    }
+                    Corps { preferred-width: root.moitie; min-width: 0px; horizontal-stretch: 0; text: r.action; vertical-alignment: center; font-size: Theme.texte-sm; color: Theme.encre; }
+                    Corps { preferred-width: root.moitie; min-width: 0px; horizontal-stretch: 0; text: r.ancien; vertical-alignment: center; font-size: Theme.texte-sm; color: Theme.encre-3; }
+                    Rectangle { width: 120px; Badge { x: 0; texte: r.actif ? "actif" : "pas encore"; genre: r.actif ? "succes" : "neutre"; } }
+                }
+                Rectangle { height: 1px; background: Theme.filet; }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Preferences (equivalent de Decid.ini)
+export global Preferences {
+    in-out property <int> grille3d: 60;          // resolution des volumes 3D (20 a 120 ici)
+    in-out property <float> transparence3d: 0.7;  // ancien Decid 0,1..0,99
+    in-out property <int> threads: 1;             // threads du moteur
+    in-out property <bool> rotation3d: false;
+    in-out property <bool> donnees3d: false;
+    callback changees();
+}
+
+component Case inherits HorizontalLayout {
+    in-out property <bool> coche;
+    in property <string> texte;
+    callback change();
+    spacing: Theme.e-xs; height: 28px;
+    Rectangle {
+        y: (parent.height - self.height) / 2;
+        width: 18px; height: 18px; border-radius: 4px; border-width: 2px;
+        border-color: root.coche ? Theme.accent-texte : Theme.filet-fort;
+        background: root.coche ? Theme.accent : transparent;
+        accessible-role: checkbox; accessible-label: root.texte; accessible-checked: root.coche;
+        TouchArea { clicked => { root.coche = !root.coche; root.change(); } }
+    }
+    Corps { text: root.texte; vertical-alignment: center; font-size: Theme.texte-sm; }
+}
+
+component Reglage inherits HorizontalLayout {
+    in property <string> libelle;
+    in property <string> aide;
+    in property <string> valeur;
+    callback moins();
+    callback plus();
+    spacing: Theme.e-md; padding-top: 6px; padding-bottom: 6px;
+    VerticalLayout {
+        horizontal-stretch: 1;
+        Text { text: root.libelle; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+        Note { text: root.aide; font-size: Theme.texte-xs; }
+    }
+    HorizontalLayout {
+        spacing: 4px;
+        Bouton { texte: "−"; clic => { root.moins(); } }
+        Text { width: 64px; text: root.valeur; horizontal-alignment: center; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+        Bouton { texte: "+"; clic => { root.plus(); } }
+    }
+}
+
+export component DialoguePreferences inherits VerticalLayout {
+    callback preferences-changees();
+    spacing: Theme.e-lg;
+    Carte {
+        height: contenu-carte-0.preferred-height;
+        contenu-carte-0 := VerticalLayout {
+            padding: Theme.e-lg; spacing: Theme.e-sm;
+            Titre { text: "Apparence"; }
+            HorizontalLayout {
+                spacing: Theme.e-md;
+                Text { horizontal-stretch: 1; text: "Thème"; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                Pilules { width: 220px; options: ["Sombre", "Clair"]; choisi: Theme.sombre ? 0 : 1; change(i) => { Theme.sombre = i == 0; root.preferences-changees(); } }
+            }
+            HorizontalLayout {
+                spacing: Theme.e-md;
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    Text { text: "Lecture facilitée"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    Note { text: "Police et interlignes plus grands, sans animation."; font-size: Theme.texte-xs; }
+                }
+                Pilules { width: 220px; options: ["Normale", "Facilitée"]; choisi: Theme.facile ? 1 : 0; change(i) => { Theme.facile = i == 1; root.preferences-changees(); } }
+            }
+        }
+    }
+    Carte {
+        height: contenu-carte-1.preferred-height;
+        contenu-carte-1 := VerticalLayout {
+            padding: Theme.e-lg; spacing: Theme.e-sm;
+            HorizontalLayout {
+                Titre { text: "Vue 3D et calcul"; }
+                Bouton {
+                    genre: "fantome"; texte: "Valeurs par défaut";
+                    clic => { Preferences.grille3d = 60; Preferences.transparence3d = 0.7; Preferences.threads = 1; Preferences.rotation3d = false; Preferences.donnees3d = false; Preferences.changees(); }
+                }
+            }
+            Reglage {
+                libelle: "Résolution de la grille 3D"; aide: "20 = rapide, 120 = lent (volumes calculés par le moteur)";
+                valeur: Preferences.grille3d;
+                moins => { Preferences.grille3d = max(20, Preferences.grille3d - 10); Preferences.changees(); }
+                plus => { Preferences.grille3d = min(120, Preferences.grille3d + 10); Preferences.changees(); }
+            }
+            Reglage {
+                libelle: "Transparence des frontières 3D"; aide: "de 0,1 à 0,99";
+                valeur: "0," + (Math.round(Preferences.transparence3d * 100) < 10 ? "0" : "") + Math.round(Preferences.transparence3d * 100);
+                moins => { Preferences.transparence3d = max(0.1, Preferences.transparence3d - 0.05); Preferences.changees(); }
+                plus => { Preferences.transparence3d = min(0.99, Preferences.transparence3d + 0.05); Preferences.changees(); }
+            }
+            Reglage {
+                libelle: "Nombre de threads du moteur"; aide: "de 1 à 8";
+                valeur: Preferences.threads;
+                moins => { Preferences.threads = max(1, Preferences.threads - 1); Preferences.changees(); }
+                plus => { Preferences.threads = min(8, Preferences.threads + 1); Preferences.changees(); }
+            }
+            Case { coche <=> Preferences.rotation3d; texte: "Animer la rotation 3D automatiquement"; change => { Preferences.changees(); } }
+            Case { coche <=> Preferences.donnees3d; texte: "En 3D, montrer les données seulement"; change => { Preferences.changees(); } }
+            Note { text: "Mêmes réglages que la « Configuration du programme » de l’ancien Decid (Decid.ini). Ils sont conservés dans le profil Windows de l’utilisateur."; font-size: Theme.texte-xs; }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Guide de TP
+export global Guide {
+    in property <[bool]> faites: [false, false, false, false, false];
+}
+
+export component DialogueGuide inherits VerticalLayout {
+    callback aller(string);
+    spacing: Theme.e-md;
+    Note { text: "Cinq étapes, dans l’ordre d’une séance."; }
+    for e[i] in [
+        { titre: "Choisir des données", texte: "Ouvrez un jeu de la bibliothèque ou importez votre CSV. Regardez le nombre de classes, d’attributs et de points par classe : un jeu déséquilibré se lit autrement.", l1: "Bibliothèque", a1: "etape:donnees", l2: "Importer un CSV", a2: "importer", l3: "", a3: "" },
+        { titre: "Choisir et régler un modèle", texte: "Prenez un algorithme et un réglage. Avant d’entraîner, pariez : la frontière sera-t-elle lisse ou tourmentée ?", l1: "Modèle", a1: "etape:modele", l2: "", a2: "", l3: "", a3: "" },
+        { titre: "Entraîner et lire le résultat", texte: "Entraînez (F4), puis lisez le score sur le test et la matrice de confusion : quelles classes se confondent, et où sur le plan ?", l1: "Résultats", a1: "etape:resultats", l2: "", a2: "", l3: "", a3: "" },
+        { titre: "Comparer deux expériences", texte: "Changez un seul réglage et réentraînez. Une comparaison n’est directe que si les deux expériences utilisent le même partage des données.", l1: "Expériences", a1: "experiences", l2: "", a2: "", l3: "", a3: "" },
+        { titre: "Comprendre ce qui se passe", texte: "Posez vos propres points dans le bac à sable, suivez un apprentissage pas à pas (F5), puis exportez vos résultats pour le compte rendu.", l1: "Bac à sable", a1: "bac-a-sable", l2: "Pas à pas", a2: "pas-a-pas", l3: "Exporter", a3: "exporter" },
+    ]: Carte {
+        height: contenu-carte-2.preferred-height;
+        contenu-carte-2 := HorizontalLayout {
+            padding: Theme.e-md; spacing: Theme.e-md;
+            Rectangle {
+                y: 0; width: 32px; height: 32px; border-radius: 16px;
+                background: Guide.faites[i] ? Theme.succes-doux : Theme.surface-3;
+                Text { text: Guide.faites[i] ? "✓" : i + 1; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Guide.faites[i] ? Theme.succes : Theme.encre; }
+            }
+            VerticalLayout {
+                horizontal-stretch: 1; spacing: 6px;
+                HorizontalLayout {
+                    spacing: Theme.e-sm; alignment: start;
+                    Titre { text: e.titre; corps: Theme.texte-md; }
+                    if Guide.faites[i]: Badge { texte: "fait"; genre: "succes"; }
+                }
+                Corps { text: e.texte; font-size: Theme.texte-sm; }
+                HorizontalLayout {
+                    spacing: Theme.e-sm; alignment: start;
+                    if e.l1 != "": Bouton { genre: "fantome"; icone: Icones.fleche; texte: e.l1; clic => { root.aller(e.a1); } }
+                    if e.l2 != "": Bouton { genre: "fantome"; icone: Icones.fleche; texte: e.l2; clic => { root.aller(e.a2); } }
+                    if e.l3 != "": Bouton { genre: "fantome"; icone: Icones.fleche; texte: e.l3; clic => { root.aller(e.a3); } }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Exporter
+export struct Artefact { nom: string, libelle: string, description: string, taille: string, tache: string }
+
+export global Exporter {
+    in property <[string]> experiences;
+    in-out property <int> experience: 0;
+    in property <[Artefact]> principaux;
+    in property <[Artefact]> tous;
+    in property <string> message;
+    callback choisir(int);
+    callback enregistrer(string, string);    // tache, nom du fichier publie
+    callback tableau();
+}
+
+export component DialogueExporter inherits VerticalLayout {
+    property <bool> tout-ouvert: false;
+    spacing: Theme.e-md;
+    if Exporter.experiences.length == 0: Carte {
+        height: contenu-carte-3.preferred-height;
+        contenu-carte-3 := VerticalLayout {
+            padding: Theme.e-lg; spacing: Theme.e-sm;
+            Titre { text: "Rien à exporter"; }
+            Corps { text: "Entraînez au moins un modèle : ses artefacts (évaluation, prédictions, image) seront enregistrables ici."; font-size: Theme.texte-sm; }
+        }
+    }
+    if Exporter.experiences.length > 0: Carte {
+        height: contenu-carte-4.preferred-height;
+        contenu-carte-4 := VerticalLayout {
+            padding: Theme.e-lg; spacing: Theme.e-sm;
+            HorizontalLayout {
+                Titre { text: "Exporter une expérience"; }
+                Bouton { genre: "fantome"; icone: Icones.dossier; texte: "Tableau des expériences (CSV)"; clic => { Exporter.tableau(); } }
+            }
+            Defileur { etiquette: "Expérience"; options: Exporter.experiences; choisi: Exporter.experience; change(i) => { Exporter.choisir(i); } }
+            if Exporter.message != "": Note { text: Exporter.message; }
+            for a in Exporter.principaux: HorizontalLayout {
+                spacing: Theme.e-md; padding-top: 6px; padding-bottom: 6px;
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    Text { text: a.libelle + " · " + a.nom; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    Note { text: a.description + " · " + a.taille; font-size: Theme.texte-xs; }
+                }
+                Bouton { texte: "Enregistrer"; clic => { Exporter.enregistrer(a.tache, a.nom); } }
+            }
+            Bouton { genre: "fantome"; texte: (root.tout-ouvert ? "Masquer" : "Afficher") + " tous les artefacts publiés (" + Exporter.tous.length + ")"; clic => { root.tout-ouvert = !root.tout-ouvert; } }
+            if root.tout-ouvert: Rectangle {
+                height: bloc-0.preferred-height;
+                bloc-0 := VerticalLayout {
+                    spacing: 2px;
+                    for a in Exporter.tous: HorizontalLayout {
+                        spacing: Theme.e-sm; height: 30px;
+                        Corps { horizontal-stretch: 2; text: a.nom; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Note { horizontal-stretch: 2; text: a.tache; vertical-alignment: center; font-size: Theme.texte-xs; overflow: elide; }
+                        Note { width: 70px; text: a.taille; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Bouton { genre: "fantome"; texte: "Enregistrer"; clic => { Exporter.enregistrer(a.tache, a.nom); } }
+                    }
+                }
+            }
+            Note { text: "Fichiers originaux publiés par le moteur, avec leur empreinte SHA-256 dans artefacts.json. Ils sont recopiés tels quels."; font-size: Theme.texte-xs; }
+        }
+    }
+}

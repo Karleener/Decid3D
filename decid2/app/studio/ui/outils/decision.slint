@@ -1,0 +1,190 @@
+// Outil « Appliquer un modele a un fichier » : le modele d'une experience deja
+// entrainee est applique tel quel (meme mise a l'echelle, memes attributs) ; rien n'est reappris (operation decider).
+import { Theme } from "../theme.slint";
+import { Icone, Icones } from "../icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Pilules, Defileur, Defilement } from "../composants.slint";
+import { Fait, LigneConfusion } from "../etude.slint";
+
+export struct ClassePredite { nom: string, lignes: int, part: float, texte: string }
+export struct LigneDecidee { ligne: string, reelle: string, prediction: string, erreur: bool }
+
+export global Decision {
+    in property <[string]> modeles;
+    in-out property <int> modele: 0;
+    in property <[Fait]> modele-faits;
+    in-out property <int> mode: 0;               // 0 bibliotheque, 1 fichier CSV
+    in property <[string]> jeux;
+    in-out property <int> jeu: 0;
+    in property <string> fichier;
+    in-out property <int> en-tete: 0;            // observation, en-tete, auto
+    in-out property <int> separateur: 0;         // virgule, point-virgule, tabulation
+    in-out property <int> colonne: 1;            // 0 aucune, puis colonne 1..10
+    in property <bool> calcul;
+    in property <string> erreur;
+    in property <bool> resultat;
+    in property <string> resume;
+    in property <string> score-titre;
+    in property <string> score;
+    in property <string> score-note;
+    in property <string> temps;
+    in property <string> temps-note;
+    in property <string> hors-plage;
+    in property <[ClassePredite]> predites;
+    in property <bool> evaluee;
+    in property <[string]> conf-classes;
+    in property <[LigneConfusion]> confusion;
+    in property <string> lignes-note;
+    in property <[LigneDecidee]> lignes;
+    callback choisir-modele(int);
+    callback choisir-fichier();
+    callback appliquer();
+    callback enregistrer();
+    callback vers-importer();
+}
+
+export component OutilDecision inherits Rectangle {
+    property <length> col-g: 340px;
+
+    Defilement {
+        x: 0; y: 0; width: root.col-g; height: root.height;
+        content-width: self.width;
+        content-height: gauche.preferred-height;
+        gauche := VerticalLayout {
+            alignment: start;
+            Carte {
+                height: contenu-carte-0.preferred-height;
+                contenu-carte-0 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Modèle"; corps: Theme.texte-md; }
+                    if Decision.modeles.length == 0: Note { text: "Aucune expérience entraînée dans cette session."; }
+                    if Decision.modeles.length == 0: Bouton { texte: "Entraîner un modèle"; icone: Icones.fleche; clic => { Decision.vers-importer(); } }
+                    if Decision.modeles.length > 0: Defileur { etiquette: "Expérience"; options: Decision.modeles; choisi: Decision.modele; change(i) => { Decision.choisir-modele(i); } }
+                    for f in Decision.modele-faits: HorizontalLayout {
+                        padding-top: 3px; padding-bottom: 3px; spacing: Theme.e-sm;
+                        Note { width: 110px; text: f.cle; font-size: Theme.texte-xs; }
+                        Text { horizontal-stretch: 1; text: f.valeur; wrap: word-wrap; horizontal-alignment: right; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.encre; }
+                    }
+                    Rectangle { height: Theme.e-xs; }
+                    Text { text: "Fichier à décider"; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    Pilules { options: ["Bibliothèque", "Fichier CSV"]; choisi <=> Decision.mode; }
+                    if Decision.mode == 0: Defileur { etiquette: "Jeu"; options: Decision.jeux; choisi <=> Decision.jeu; }
+                    if Decision.mode == 1: Bouton { icone: Icones.dossier; texte: Decision.fichier != "" ? Decision.fichier : "Choisir un fichier CSV…"; clic => { Decision.choisir-fichier(); } }
+                    Note { text: "Première ligne"; font-size: Theme.texte-xs; }
+                    Pilules { options: ["observation", "en-tête", "auto"]; choisi <=> Decision.en-tete; }
+                    Note { text: "Séparateur"; font-size: Theme.texte-xs; }
+                    Pilules { options: ["virgule", "point-virgule", "tabulation"]; choisi <=> Decision.separateur; }
+                    Defileur {
+                        etiquette: "Classe";
+                        options: ["aucune (fichier sans classes)", "colonne 1", "colonne 2", "colonne 3", "colonne 4", "colonne 5", "colonne 6", "colonne 7", "colonne 8", "colonne 9", "colonne 10"];
+                        choisi <=> Decision.colonne;
+                    }
+                    Bouton { genre: "principal"; actif: !Decision.calcul && Decision.modeles.length > 0; texte: Decision.calcul ? "Décision en cours…" : "Appliquer le modèle"; clic => { Decision.appliquer(); } }
+                    Note { text: "Le fichier n’est jamais modifié. Le moteur refuse un fichier dont le nombre ou les noms d’attributs diffèrent de ceux du modèle."; font-size: Theme.texte-xs; }
+                }
+            }
+        }
+    }
+
+    Defilement {
+        x: root.col-g + Theme.e-lg; y: 0; width: root.width - self.x; height: root.height;
+        content-width: self.width;
+        content-height: droite.preferred-height;
+        droite := VerticalLayout {
+            spacing: Theme.e-lg; alignment: start;
+            if Decision.erreur != "": Rectangle {
+                height: er.preferred-height + 20px; border-radius: Theme.r-md; background: Theme.alerte-doux;
+                er := Text { x: Theme.e-md; width: parent.width - 2 * Theme.e-md; text: Decision.erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+            }
+            if !Decision.resultat: Carte {
+                height: contenu-carte-1.preferred-height;
+                contenu-carte-1 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "Décision sur un fichier"; corps: Theme.texte-md; }
+                    Corps { text: "Le modèle d’une expérience déjà entraînée est appliqué, tel quel, à un autre fichier : même mise à l’échelle que pendant l’apprentissage, mêmes attributs dans le même ordre. Rien n’est réappris."; font-size: Theme.texte-sm; }
+                    Note { text: "Si le fichier contient la colonne des classes, le moteur compte aussi les erreurs (score et confusion)."; font-size: Theme.texte-xs; }
+                }
+            }
+            if Decision.resultat: Carte {
+                height: contenu-carte-2.preferred-height;
+                contenu-carte-2 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout { Titre { text: "Prédictions"; corps: Theme.texte-md; } Badge { texte: "calculé par le moteur"; genre: "succes"; } }
+                    Note { text: Decision.resume; font-size: Theme.texte-xs; }
+                    HorizontalLayout {
+                        spacing: Theme.e-lg;
+                        VerticalLayout {
+                            horizontal-stretch: 1; spacing: 2px;
+                            Note { text: Decision.score-titre; font-size: Theme.texte-xs; }
+                            Text { text: Decision.score; font-family: Theme.police-titre; font-size: Theme.texte-2xl; color: Theme.encre; }
+                            Note { text: Decision.score-note; font-size: Theme.texte-xs; }
+                        }
+                        VerticalLayout {
+                            horizontal-stretch: 1; spacing: 2px;
+                            Note { text: "Temps de décision"; font-size: Theme.texte-xs; }
+                            Text { text: Decision.temps; font-family: Theme.police-titre; font-size: Theme.texte-2xl; color: Theme.encre; }
+                            Note { text: Decision.temps-note; font-size: Theme.texte-xs; }
+                        }
+                    }
+                    if Decision.hors-plage != "": Text { text: Decision.hors-plage; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+                    HorizontalLayout { alignment: start; Bouton { icone: Icones.dossier; texte: "Enregistrer predictions.csv"; clic => { Decision.enregistrer(); } } }
+                }
+            }
+            if Decision.resultat: Carte {
+                height: contenu-carte-3.preferred-height;
+                contenu-carte-3 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: 6px;
+                    Titre { text: "Classes prédites"; corps: Theme.texte-md; }
+                    for c[i] in Decision.predites: HorizontalLayout {
+                        spacing: Theme.e-sm; height: 26px;
+                        Rectangle {
+                            y: (parent.height - self.height) / 2; width: 10px; height: 10px; border-radius: 5px;
+                            background: Math.mod(i, 6) == 0 ? Theme.classe-0 : Math.mod(i, 6) == 1 ? Theme.classe-1 : Math.mod(i, 6) == 2 ? Theme.classe-2 : Math.mod(i, 6) == 3 ? Theme.classe-3 : Math.mod(i, 6) == 4 ? Theme.classe-4 : Theme.classe-5;
+                        }
+                        Corps { width: 90px; text: "classe " + c.nom; vertical-alignment: center; font-size: Theme.texte-sm; }
+                        Rectangle {
+                            horizontal-stretch: 1;
+                            Rectangle { x: 0; height: 8px; width: parent.width; border-radius: 4px; background: Theme.surface-3; }
+                            Rectangle { x: 0; height: 8px; width: parent.width * c.part; border-radius: 4px; background: Theme.accent-texte; }
+                        }
+                        Text { width: 110px; text: c.texte; horizontal-alignment: right; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: Theme.encre; }
+                    }
+                }
+            }
+            if Decision.resultat && Decision.evaluee: Carte {
+                height: contenu-carte-4.preferred-height;
+                contenu-carte-4 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: 4px;
+                    Titre { text: "Où se trompe-t-il ?"; corps: Theme.texte-md; }
+                    for l[r] in Decision.confusion: HorizontalLayout {
+                        spacing: 4px; height: 32px;
+                        Note { width: 70px; text: "réel " + l.reel; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        for v[c] in l.cellules: Rectangle {
+                            horizontal-stretch: 1; min-width: 0px; preferred-width: 0px; border-radius: 6px;
+                            background: r == c ? Theme.succes-doux : v > 0 ? Theme.alerte-doux : Theme.surface-1;
+                            Text { text: v; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: 600; color: r == c ? Theme.succes : v > 0 ? Theme.alerte : Theme.encre-3; }
+                        }
+                    }
+                }
+            }
+            if Decision.resultat: Carte {
+                height: contenu-carte-5.preferred-height;
+                contenu-carte-5 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: 2px;
+                    HorizontalLayout { Titre { text: "Lignes décidées"; corps: Theme.texte-md; } Note { text: Decision.lignes-note; horizontal-alignment: right; vertical-alignment: center; font-size: Theme.texte-xs; } }
+                    HorizontalLayout {
+                        height: 26px;
+                        Note { horizontal-stretch: 1; text: "Ligne du fichier"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                        Note { horizontal-stretch: 1; text: "Classe réelle"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                        Note { horizontal-stretch: 1; text: "Prédiction"; font-size: Theme.texte-xs; font-weight: 600; vertical-alignment: center; }
+                    }
+                    for l in Decision.lignes: HorizontalLayout {
+                        height: 24px;
+                        Corps { horizontal-stretch: 1; text: l.ligne; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Corps { horizontal-stretch: 1; text: l.reelle; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Text { horizontal-stretch: 1; text: l.prediction + (l.erreur ? "  · erreur" : ""); vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: l.erreur ? Theme.accent-texte : Theme.encre; }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,250 @@
+// Outil « Atelier image » : image fixe ou webcam, zones etiquetees a la souris,
+// couleurs moyennes de fenetres dans un espace couleur, apprentissage puis segmentation de toute l'image par le moteur.
+import { Theme } from "../theme.slint";
+import { Icone, Icones } from "../icones.slint";
+import { Titre, Corps, Note, Bouton, Carte, Badge, Champ, Pilules, Defileur, BoutonIcone, Defilement } from "../composants.slint";
+import { Fait } from "../etude.slint";
+
+export struct Zone { classe: int, x: float, y: float, largeur: float, hauteur: float, texte: string }
+export struct PartClasse { nom: string, texte: string, indice: int }
+
+export global AtelierImage {
+    in-out property <int> source: 0;            // 0 image fixe, 1 webcam
+    in property <string> fichier;
+    in property <bool> camera;
+    in property <bool> image-presente;
+    in property <image> image;                  // photo (fixe ou capturee)
+    in property <image> apercu;                 // flux de la camera
+    in property <int> largeur;
+    in property <int> hauteur;
+    in property <[string]> classes: ["fond", "objet"];
+    in-out property <int> classe: 0;
+    in-out property <string> nouvelle;
+    in property <[Zone]> zones;
+    in-out property <int> espace: 0;            // Lab, HSV, RGB, YCrCb
+    in-out property <int> fenetre: 2;           // indice dans 1, 3, 5, 7, 9, 11, 15, 21
+    in-out property <string> par-zone: "200";
+    in-out property <int> algorithme: 0;        // k-PPV, Bayes, SVM, Foret
+    in property <bool> calcul;
+    in property <string> etape;
+    in property <string> erreur;
+    in property <bool> modele;
+    in property <bool> modele-compatible;
+    in property <bool> segmentation;
+    in-out property <int> vue: 1;               // 0 image seule, 1 classes superposees
+    in property <image> carte;
+    in property <[PartClasse]> parts;
+    in property <[Fait]> faits;
+    callback choisir-image();
+    callback allumer();
+    callback eteindre();
+    callback capturer();
+    callback revenir-apercu();
+    callback ajouter-classe();
+    callback zone-tracee(float, float, float, float);   // en pixels de l'image d'origine
+    callback supprimer-zone(int);
+    callback apprendre();
+    callback resegmenter();
+    callback enregistrer-carte();
+}
+
+component Pastille inherits Rectangle {
+    in property <int> indice;
+    width: 10px; height: 10px; border-radius: 5px;
+    background: Math.mod(indice, 6) == 0 ? Theme.classe-0 : Math.mod(indice, 6) == 1 ? Theme.classe-1 : Math.mod(indice, 6) == 2 ? Theme.classe-2 : Math.mod(indice, 6) == 3 ? Theme.classe-3 : Math.mod(indice, 6) == 4 ? Theme.classe-4 : Theme.classe-5;
+}
+
+export component OutilAtelierImage inherits Rectangle {
+    property <length> col-g: 320px;
+    property <length> col-d: 320px;
+    // geometrie de l'image affichee (contenue dans le cadre)
+    property <float> echelle: AtelierImage.largeur > 0 ? min(cadre.width / (AtelierImage.largeur * 1px), cadre.height / (AtelierImage.hauteur * 1px)) : 1;
+    property <length> img-l: AtelierImage.largeur * root.echelle * 1px;
+    property <length> img-h: AtelierImage.hauteur * root.echelle * 1px;
+    property <length> img-x: (cadre.width - root.img-l) / 2;
+    property <length> img-y: (cadre.height - root.img-h) / 2;
+    property <bool> trace: false;
+    property <length> x0;
+    property <length> y0;
+    property <length> x1;
+    property <length> y1;
+
+    Defilement {
+        x: 0; y: 0; width: root.col-g; height: root.height;
+        content-width: self.width;
+        content-height: gauche.preferred-height;
+        gauche := VerticalLayout {
+            spacing: Theme.e-lg; alignment: start;
+            Carte {
+                height: contenu-carte-0.preferred-height;
+                contenu-carte-0 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "1. Image"; corps: Theme.texte-md; }
+                    Pilules { options: ["Image fixe", "Webcam"]; choisi <=> AtelierImage.source; change(i) => { if (i == 0) { AtelierImage.eteindre(); } } }
+                    if AtelierImage.source == 0: Bouton { icone: Icones.dossier; texte: AtelierImage.fichier != "" ? AtelierImage.fichier : "Choisir une image PNG ou JPEG…"; clic => { AtelierImage.choisir-image(); } }
+                    if AtelierImage.source == 1: Rectangle {
+                        height: bloc-0.preferred-height;
+                        bloc-0 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            if !AtelierImage.camera: Bouton { texte: "Allumer la caméra"; clic => { AtelierImage.allumer(); } }
+                            if AtelierImage.camera: HorizontalLayout {
+                                spacing: Theme.e-sm; alignment: start;
+                                Bouton { genre: "principal"; texte: "Capturer"; clic => { AtelierImage.capturer(); } }
+                                Bouton { genre: "fantome"; texte: "Éteindre"; clic => { AtelierImage.eteindre(); } }
+                            }
+                            Note { text: "L’image reste sur cet ordinateur : elle n’est envoyée qu’au moteur local, au moment du calcul."; font-size: Theme.texte-xs; }
+                        }
+                    }
+                    if AtelierImage.image-presente: Note { text: AtelierImage.largeur + " × " + AtelierImage.hauteur + " pixels."; font-size: Theme.texte-xs; }
+                }
+            }
+            Carte {
+                height: contenu-carte-1.preferred-height;
+                contenu-carte-1 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "2. Zones étiquetées"; corps: Theme.texte-md; }
+                    Note { text: "Choisissez une classe, puis tracez des rectangles sur l’image (au moins deux classes)."; font-size: Theme.texte-xs; }
+                    for c[i] in AtelierImage.classes: Rectangle {
+                        height: 30px; border-radius: 15px;
+                        background: AtelierImage.classe == i ? Theme.surface-3 : zc.has-hover ? Theme.surface-2 : transparent;
+                        accessible-role: radio-button; accessible-label: c; accessible-checked: AtelierImage.classe == i;
+                        HorizontalLayout {
+                            padding-left: Theme.e-sm; spacing: Theme.e-xs;
+                            Pastille { y: (parent.height - self.height) / 2; indice: i; }
+                            Text { text: c; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-sm; font-weight: AtelierImage.classe == i ? 600 : 400; color: Theme.encre; }
+                        }
+                        zc := TouchArea { mouse-cursor: pointer; clicked => { AtelierImage.classe = i; } }
+                    }
+                    if AtelierImage.classes.length < 6: HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Champ { horizontal-stretch: 1; texte <=> AtelierImage.nouvelle; info: "Nouvelle classe"; valide => { AtelierImage.ajouter-classe(); } }
+                        Bouton { texte: "Ajouter"; clic => { AtelierImage.ajouter-classe(); } }
+                    }
+                    for z[k] in AtelierImage.zones: HorizontalLayout {
+                        spacing: Theme.e-xs; height: 30px;
+                        Pastille { y: (parent.height - self.height) / 2; indice: z.classe; }
+                        Corps { horizontal-stretch: 1; text: z.texte; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        BoutonIcone { y: (parent.height - self.height) / 2; width: 30px; height: 30px; trace: Icones.croix; info: "Supprimer cette zone"; clic => { AtelierImage.supprimer-zone(k); } }
+                    }
+                }
+            }
+            Carte {
+                height: contenu-carte-2.preferred-height;
+                contenu-carte-2 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    Titre { text: "3. Couleurs et apprentissage"; corps: Theme.texte-md; }
+                    Note { text: "Espace couleur"; font-size: Theme.texte-xs; }
+                    Pilules { options: ["Lab", "HSV", "RGB", "YCrCb"]; choisi <=> AtelierImage.espace; }
+                    Defileur { etiquette: "Fenêtre"; options: ["1 × 1", "3 × 3", "5 × 5", "7 × 7", "9 × 9", "11 × 11", "15 × 15", "21 × 21"]; choisi <=> AtelierImage.fenetre; }
+                    HorizontalLayout {
+                        spacing: Theme.e-sm;
+                        Note { text: "Fenêtres par zone"; vertical-alignment: center; font-size: Theme.texte-xs; }
+                        Champ { texte <=> AtelierImage.par-zone; info: "Fenêtres par zone"; genre: number; }
+                    }
+                    Note { text: "Algorithme"; font-size: Theme.texte-xs; }
+                    Pilules { options: ["k-PPV", "Bayes", "SVM", "Forêt"]; choisi <=> AtelierImage.algorithme; }
+                    Bouton { genre: "principal"; actif: !AtelierImage.calcul && AtelierImage.image-presente; texte: AtelierImage.calcul ? AtelierImage.etape : "Apprendre et segmenter"; clic => { AtelierImage.apprendre(); } }
+                    if AtelierImage.modele: Bouton { actif: !AtelierImage.calcul && AtelierImage.modele-compatible; texte: "Segmenter l’image actuelle avec ce modèle"; clic => { AtelierImage.resegmenter(); } }
+                    Note { text: "Chaque pixel est décrit par la couleur moyenne de la fenêtre qui l’entoure, dans l’espace choisi (valeurs divisées par 255)."; font-size: Theme.texte-xs; }
+                    if AtelierImage.erreur != "": Text { text: AtelierImage.erreur; wrap: word-wrap; font-size: Theme.texte-sm; color: Theme.alerte; }
+                }
+            }
+        }
+    }
+
+    // ---- image et zones
+    cadre := Rectangle {
+        x: root.col-g + Theme.e-lg; y: AtelierImage.segmentation ? 48px : 0px;
+        width: root.width - root.col-g - root.col-d - 2 * Theme.e-lg;
+        height: root.height - self.y - 30px;
+        background: Theme.surface-plot; border-width: 1px; border-color: Theme.filet; border-radius: Theme.r-lg; clip: true;
+        if AtelierImage.camera && !AtelierImage.image-presente: Image { width: parent.width; height: parent.height; source: AtelierImage.apercu; image-fit: contain; }
+        if !AtelierImage.image-presente && !AtelierImage.camera: Corps {
+            x: Theme.e-lg; width: parent.width - 2 * Theme.e-lg; horizontal-alignment: center;
+            text: AtelierImage.source == 1 ? "Allumez la caméra puis capturez une image." : "Choisissez une image : vous y tracerez les zones de chaque classe.";
+        }
+        if AtelierImage.image-presente: Rectangle {
+            x: root.img-x; y: root.img-y; width: root.img-l; height: root.img-h;
+            Image { width: parent.width; height: parent.height; source: AtelierImage.image; image-fit: fill; }
+            if AtelierImage.segmentation && AtelierImage.vue == 1: Image { width: parent.width; height: parent.height; source: AtelierImage.carte; image-fit: fill; image-rendering: pixelated; }
+            for z in AtelierImage.zones: Rectangle {
+                x: z.x * root.echelle * 1px; y: z.y * root.echelle * 1px; width: z.largeur * root.echelle * 1px; height: z.hauteur * root.echelle * 1px;
+                border-width: 2px;
+                border-color: Math.mod(z.classe, 6) == 0 ? Theme.classe-0 : Math.mod(z.classe, 6) == 1 ? Theme.classe-1 : Math.mod(z.classe, 6) == 2 ? Theme.classe-2 : Math.mod(z.classe, 6) == 3 ? Theme.classe-3 : Math.mod(z.classe, 6) == 4 ? Theme.classe-4 : Theme.classe-5;
+                background: self.border-color.with-alpha(0.18);
+            }
+            if root.trace: Rectangle {
+                x: min(root.x0, root.x1); y: min(root.y0, root.y1); width: abs(root.x1 - root.x0); height: abs(root.y1 - root.y0);
+                border-width: 2px; border-color: Theme.focus; background: Theme.focus.with-alpha(0.12);
+            }
+            TouchArea {
+                mouse-cursor: crosshair;
+                pointer-event(ev) => {
+                    if (ev.kind == PointerEventKind.down) { root.trace = true; root.x0 = self.mouse-x; root.y0 = self.mouse-y; root.x1 = self.mouse-x; root.y1 = self.mouse-y; }
+                    if (ev.kind == PointerEventKind.up && root.trace) {
+                        root.trace = false;
+                        AtelierImage.zone-tracee(min(root.x0, root.x1) / (root.echelle * 1px), min(root.y0, root.y1) / (root.echelle * 1px),
+                                                 abs(root.x1 - root.x0) / (root.echelle * 1px), abs(root.y1 - root.y0) / (root.echelle * 1px));
+                    }
+                }
+                moved => { if (root.trace) { root.x1 = clamp(self.mouse-x, 0px, self.width); root.y1 = clamp(self.mouse-y, 0px, self.height); } }
+            }
+        }
+    }
+    if AtelierImage.segmentation: Rectangle {
+        x: cadre.x; y: 0; width: 300px; height: 36px;
+        Pilules { width: parent.width; options: ["Image seule", "Classes superposées"]; choisi <=> AtelierImage.vue; }
+    }
+    if AtelierImage.camera && AtelierImage.image-presente: Rectangle {
+        x: cadre.x + cadre.width - self.width; y: 0; width: rv.preferred-width; height: 36px;
+        rv := Bouton { genre: "fantome"; texte: "Revenir à l’aperçu"; clic => { AtelierImage.revenir-apercu(); } }
+    }
+    Text {
+        x: cadre.x; y: cadre.y + cadre.height + 8px; width: cadre.width;
+        text: AtelierImage.camera && !AtelierImage.image-presente ? "aperçu de la caméra · « Capturer » fige une image" :
+              AtelierImage.image-presente ? "glisser pour tracer une zone de la classe « " + (AtelierImage.classes.length > AtelierImage.classe ? AtelierImage.classes[AtelierImage.classe] : "") + " »" : "";
+        overflow: elide; font-family: Theme.police-texte; font-size: Theme.texte-xs; color: Theme.encre-3;
+    }
+
+    // ---- segmentation
+    Defilement {
+        x: root.width - root.col-d; y: 0; width: root.col-d; height: root.height;
+        content-width: self.width;
+        content-height: droite.preferred-height;
+        droite := VerticalLayout {
+            alignment: start;
+            Carte {
+                height: contenu-carte-3.preferred-height;
+                contenu-carte-3 := VerticalLayout {
+                    padding: Theme.e-lg; spacing: Theme.e-sm;
+                    HorizontalLayout { Titre { text: "Segmentation"; corps: Theme.texte-md; } if AtelierImage.segmentation: Badge { texte: "moteur"; genre: "succes"; } }
+                    if !AtelierImage.segmentation: Note { text: "La carte des classes calculée par le moteur apparaîtra ici."; }
+                    if AtelierImage.segmentation: Rectangle {
+                        height: bloc-1.preferred-height;
+                        bloc-1 := VerticalLayout {
+                            spacing: Theme.e-sm;
+                            Rectangle {
+                                height: self.width * AtelierImage.hauteur / max(1, AtelierImage.largeur);
+                                border-radius: Theme.r-sm; clip: true;
+                                Image { width: parent.width; height: parent.height; source: AtelierImage.carte; image-fit: fill; image-rendering: pixelated; }
+                            }
+                            for p in AtelierImage.parts: HorizontalLayout {
+                                spacing: Theme.e-xs; height: 22px;
+                                Pastille { y: (parent.height - self.height) / 2; indice: p.indice; }
+                                Corps { horizontal-stretch: 1; text: p.nom; vertical-alignment: center; font-size: Theme.texte-xs; }
+                                Text { text: p.texte; vertical-alignment: center; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.encre; }
+                            }
+                            for f in AtelierImage.faits: HorizontalLayout {
+                                padding-top: 3px; padding-bottom: 3px; spacing: Theme.e-sm;
+                                Note { width: 120px; text: f.cle; font-size: Theme.texte-xs; }
+                                Text { horizontal-stretch: 1; text: f.valeur; wrap: word-wrap; horizontal-alignment: right; font-family: Theme.police-texte; font-size: Theme.texte-xs; font-weight: 600; color: Theme.encre; }
+                            }
+                            Note { text: "Le score porte sur la moitié des fenêtres tirées, gardée pour le test : il ne dit rien des pixels hors des zones."; font-size: Theme.texte-xs; }
+                            Bouton { icone: Icones.dossier; texte: "Carte du moteur (PNG)"; clic => { AtelierImage.enregistrer-carte(); } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+# Compilations (build, build-portable, banc/*/build...)
+build*/
+# Dependances tierces telechargees ou precompilees (Slint, OpenCV statique...) : voir README, section Compiler
+externe/
+# Essais, bancs de mesure et sorties de tests
+essais/
+banc/
+tmp_tests/
+Testing/
+# Fichiers temporaires
+*.diff
+*.bak
+*.tmp
+*.log
+*.user
+.vs/
+out/
